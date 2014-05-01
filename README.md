@@ -36,7 +36,7 @@ License
 
 Blackfriday Text is distributed under the Simplified BSD License:
 
-> Copyright © 2014 Gregory Holt
+> Copyright © 2014 Gregory Holt  
 > All rights reserved.
 > 
 > Redistribution and use in source and binary forms, with or without
