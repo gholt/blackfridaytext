@@ -34,7 +34,7 @@ Example
 License
 -------
 
-Blackfriday is distributed under the Simplified BSD License:
+Blackfriday Text is distributed under the Simplified BSD License:
 
 > Copyright © 2014 Gregory Holt
 > All rights reserved.
