@@ -26,7 +26,7 @@ const (
 
 const (
 	_ byte = iota
-	LINE_BREAK_MARKER
+	_LINE_BREAK_MARKER
 	_NBSP_MARKER
 	_INDENT_START_MARKER
 	_INDENT_FIRST_MARKER
@@ -67,16 +67,11 @@ func GetWidth() int {
 	return width - 1
 }
 
-// MarkdownToText parses the markdown text using the Blackfriday Markdown
-// Processor and an internal renderer to return any metadata and the formatted
-// text.
+// MarkdownToText parses the markdown text using the Blackfriday Markdown Processor and an internal renderer to return any metadata and the formatted text.
 //
-// The metadata is a [][]string where each []string will have two elements, the
-// metadata item name and the value. Metadata is an extension of standard
-// Markdown and is documented at
-// https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata
-// -- this implementation currently differs in that it requires the trailing
-// two spaces on each metadata line and doesn't support multiline values.
+// The color bool is to indicate whether it is okay to emit ANSI color escape sequences or not.
+//
+// The metadata is a [][]string where each []string will have two elements, the metadata item name and the value. Metadata is an extension of standard Markdown and is documented at https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata -- this implementation currently differs in that it requires the trailing two spaces on each metadata line and doesn't support multiline values.
 func MarkdownToText(markdown []byte, color bool) ([][]string, []byte) {
 	metadata := make([][]string, 0)
 	position := 0
@@ -108,7 +103,7 @@ func MarkdownToText(markdown []byte, color bool) ([][]string, []byte) {
 			text = reflow(text, []byte{}, []byte{}, r.width)
 			text = bytes.Replace(text, []byte{_NBSP_MARKER}, []byte(" "), -1)
 			text = bytes.Replace(
-				text, []byte{LINE_BREAK_MARKER}, []byte("\n"), -1)
+				text, []byte{_LINE_BREAK_MARKER}, []byte("\n"), -1)
 		}
 	}
 	return metadata, text
@@ -134,7 +129,7 @@ func (r *renderer) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 		if r.color {
 			out.Write(ansiEscape.Reset)
 		}
-		out.WriteByte(LINE_BREAK_MARKER)
+		out.WriteByte(_LINE_BREAK_MARKER)
 	}
 	r.ensureBlankLine(out)
 }
@@ -146,14 +141,14 @@ func (r *renderer) BlockQuote(out *bytes.Buffer, text []byte) {
 	out.WriteByte(_INDENT_FIRST_MARKER)
 	out.WriteString("> ")
 	out.WriteByte(_INDENT_SUBSEQUENT_MARKER)
-	out.Write(bytes.Trim(text, string([]byte{LINE_BREAK_MARKER})))
+	out.Write(bytes.Trim(text, string([]byte{_LINE_BREAK_MARKER})))
 	out.WriteByte(_INDENT_STOP_MARKER)
 }
 
 func (r *renderer) BlockHtml(out *bytes.Buffer, text []byte) {
 	r.ensureBlankLine(out)
 	out.Write(bytes.Replace(
-		text, []byte("\n"), []byte{LINE_BREAK_MARKER}, -1))
+		text, []byte("\n"), []byte{_LINE_BREAK_MARKER}, -1))
 }
 
 func (r *renderer) Header(
@@ -219,7 +214,7 @@ func (r *renderer) ListItem(out *bytes.Buffer, text []byte, flags int) {
 	out.WriteByte(_INDENT_FIRST_MARKER)
 	out.WriteString("    ")
 	out.WriteByte(_INDENT_SUBSEQUENT_MARKER)
-	out.Write(bytes.Trim(text, string([]byte{LINE_BREAK_MARKER})))
+	out.Write(bytes.Trim(text, string([]byte{_LINE_BREAK_MARKER})))
 	out.WriteByte(_INDENT_STOP_MARKER)
 }
 
@@ -281,7 +276,7 @@ func (r *renderer) Table(
 		}
 	}
 	out.WriteByte('+')
-	out.WriteByte(LINE_BREAK_MARKER)
+	out.WriteByte(_LINE_BREAK_MARKER)
 	for _, row := range headerRows {
 		for column, cell := range row {
 			out.WriteByte('|')
@@ -293,7 +288,7 @@ func (r *renderer) Table(
 			out.WriteByte(' ')
 		}
 		out.WriteByte('|')
-		out.WriteByte(LINE_BREAK_MARKER)
+		out.WriteByte(_LINE_BREAK_MARKER)
 	}
 	for _, width := range widths {
 		out.WriteByte('+')
@@ -302,7 +297,7 @@ func (r *renderer) Table(
 		}
 	}
 	out.WriteByte('+')
-	out.WriteByte(LINE_BREAK_MARKER)
+	out.WriteByte(_LINE_BREAK_MARKER)
 	for _, row := range bodyRows {
 		for column, cell := range row {
 			out.WriteByte('|')
@@ -314,7 +309,7 @@ func (r *renderer) Table(
 			out.WriteByte(' ')
 		}
 		out.WriteByte('|')
-		out.WriteByte(LINE_BREAK_MARKER)
+		out.WriteByte(_LINE_BREAK_MARKER)
 	}
 	for _, width := range widths {
 		out.WriteByte('+')
@@ -323,7 +318,7 @@ func (r *renderer) Table(
 		}
 	}
 	out.WriteByte('+')
-	out.WriteByte(LINE_BREAK_MARKER)
+	out.WriteByte(_LINE_BREAK_MARKER)
 }
 
 func (r *renderer) TableRow(out *bytes.Buffer, text []byte) {
@@ -433,7 +428,7 @@ func (r *renderer) Image(
 }
 
 func (r *renderer) LineBreak(out *bytes.Buffer) {
-	out.WriteByte(LINE_BREAK_MARKER)
+	out.WriteByte(_LINE_BREAK_MARKER)
 }
 
 func (r *renderer) Link(
@@ -519,10 +514,10 @@ func (r *renderer) GetFlags() int {
 func (r *renderer) ensureNewLine(out *bytes.Buffer) {
 	outb := out.Bytes()
 	outbl := len(outb)
-	if outbl > 0 && outb[outbl-1] != LINE_BREAK_MARKER &&
+	if outbl > 0 && outb[outbl-1] != _LINE_BREAK_MARKER &&
 		outb[outbl-1] != _INDENT_SUBSEQUENT_MARKER &&
 		outb[outbl-1] != _INDENT_STOP_MARKER {
-		out.WriteByte(LINE_BREAK_MARKER)
+		out.WriteByte(_LINE_BREAK_MARKER)
 	}
 }
 
@@ -530,24 +525,24 @@ func (r *renderer) ensureBlankLine(out *bytes.Buffer) {
 	outb := out.Bytes()
 	outbl := len(outb)
 	if outbl == 1 {
-		if outb[0] != LINE_BREAK_MARKER &&
+		if outb[0] != _LINE_BREAK_MARKER &&
 			outb[0] != _INDENT_SUBSEQUENT_MARKER &&
 			outb[0] != _INDENT_STOP_MARKER {
-			out.WriteByte(LINE_BREAK_MARKER)
-			out.WriteByte(LINE_BREAK_MARKER)
+			out.WriteByte(_LINE_BREAK_MARKER)
+			out.WriteByte(_LINE_BREAK_MARKER)
 		} else {
-			out.WriteByte(LINE_BREAK_MARKER)
+			out.WriteByte(_LINE_BREAK_MARKER)
 		}
 	} else if outbl > 1 {
-		if outb[outbl-1] != LINE_BREAK_MARKER &&
+		if outb[outbl-1] != _LINE_BREAK_MARKER &&
 			outb[outbl-1] != _INDENT_SUBSEQUENT_MARKER &&
 			outb[outbl-1] != _INDENT_STOP_MARKER {
-			out.WriteByte(LINE_BREAK_MARKER)
-			out.WriteByte(LINE_BREAK_MARKER)
-		} else if outb[outbl-2] != LINE_BREAK_MARKER &&
+			out.WriteByte(_LINE_BREAK_MARKER)
+			out.WriteByte(_LINE_BREAK_MARKER)
+		} else if outb[outbl-2] != _LINE_BREAK_MARKER &&
 			outb[outbl-2] != _INDENT_SUBSEQUENT_MARKER &&
 			outb[outbl-2] != _INDENT_STOP_MARKER {
-			out.WriteByte(LINE_BREAK_MARKER)
+			out.WriteByte(_LINE_BREAK_MARKER)
 		}
 	}
 }
@@ -557,7 +552,7 @@ func reflow(text []byte, indent1 []byte, indent2 []byte, width int) []byte {
 	for {
 		start := bytes.IndexByte(text, _INDENT_START_MARKER)
 		if start >= 0 {
-			out.Write(WrapBytes(text[:start], indent1, indent2, width))
+			out.Write(wrapBytes(text[:start], indent1, indent2, width))
 			if out.Len() > 0 {
 				indent1 = indent2
 			}
@@ -610,7 +605,7 @@ func reflow(text []byte, indent1 []byte, indent2 []byte, width int) []byte {
 				indent1 = indent2
 			}
 		} else {
-			out.Write(WrapBytes(text, indent1, indent2, width))
+			out.Write(wrapBytes(text, indent1, indent2, width))
 			if out.Len() > 0 {
 				indent1 = indent2
 			}
@@ -621,15 +616,24 @@ func reflow(text []byte, indent1 []byte, indent2 []byte, width int) []byte {
 }
 
 func WrapBytes(text []byte, indent1 []byte, indent2 []byte, width int) []byte {
+	if width == 0 {
+		width = GetWidth()
+	}
+	text = wrapBytes(text, indent1, indent2, width)
+	text = bytes.Replace(text, []byte{_LINE_BREAK_MARKER}, []byte{'\n'}, -1)
+	return bytes.Trim(text, "\n")
+}
+
+func wrapBytes(text []byte, indent1 []byte, indent2 []byte, width int) []byte {
 	if len(text) == 0 {
 		return text
 	}
 	textLen := len(text)
-	if textLen > 0 && text[textLen-1] == LINE_BREAK_MARKER {
+	if textLen > 0 && text[textLen-1] == _LINE_BREAK_MARKER {
 		text = text[:textLen-1]
 	}
 	var out bytes.Buffer
-	for _, line := range bytes.Split(text, []byte{LINE_BREAK_MARKER}) {
+	for _, line := range bytes.Split(text, []byte{_LINE_BREAK_MARKER}) {
 		lineLen := 0
 		start := true
 		for _, word := range bytes.Split(line, []byte{' '}) {
@@ -664,7 +668,7 @@ func WrapBytes(text []byte, indent1 []byte, indent2 []byte, width int) []byte {
 				lineLen += wordLen
 				start = false
 			} else if lineLen+1+wordLen >= width {
-				out.WriteByte(LINE_BREAK_MARKER)
+				out.WriteByte(_LINE_BREAK_MARKER)
 				out.Write(indent2)
 				out.Write(word)
 				lineLen = len(indent2) + wordLen
@@ -674,7 +678,7 @@ func WrapBytes(text []byte, indent1 []byte, indent2 []byte, width int) []byte {
 				lineLen += 1 + wordLen
 			}
 		}
-		out.WriteByte(LINE_BREAK_MARKER)
+		out.WriteByte(_LINE_BREAK_MARKER)
 	}
 	return out.Bytes()
 }
