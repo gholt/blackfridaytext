@@ -89,24 +89,28 @@ func MarkdownToText(markdown []byte, color bool) ([][]string, []byte) {
 		}
 	}
 	text := markdown[position:]
-	if len(text) > 0 {
-		r := &renderer{width: GetWidth(), color: color}
-		text = blackfriday.Markdown(
-			text, r, _BLACKFRIDAY_EXTENSIONS)
-		for r.headerLevel > 0 {
-			text = append(text, _INDENT_STOP_MARKER)
-			r.headerLevel--
-		}
-		if len(text) > 0 {
-			text = bytes.Replace(text, []byte(" \n"), []byte(" "), -1)
-			text = bytes.Replace(text, []byte("\n"), []byte(" "), -1)
-			text = reflow(text, []byte{}, []byte{}, r.width)
-			text = bytes.Replace(text, []byte{_NBSP_MARKER}, []byte(" "), -1)
-			text = bytes.Replace(
-				text, []byte{_LINE_BREAK_MARKER}, []byte("\n"), -1)
-		}
+	if len(text) == 0 {
+		return metadata, []byte{}
 	}
-	return metadata, text
+	return metadata, MarkdownToTextNoMetadata(text, color)
+}
+
+func MarkdownToTextNoMetadata(markdown []byte, color bool) []byte {
+	r := &renderer{width: GetWidth(), color: color}
+	text := blackfriday.Markdown(markdown, r, _BLACKFRIDAY_EXTENSIONS)
+	for r.headerLevel > 0 {
+		text = append(text, _INDENT_STOP_MARKER)
+		r.headerLevel--
+	}
+	if len(text) > 0 {
+		text = bytes.Replace(text, []byte(" \n"), []byte(" "), -1)
+		text = bytes.Replace(text, []byte("\n"), []byte(" "), -1)
+		text = reflow(text, []byte{}, []byte{}, r.width)
+		text = bytes.Replace(text, []byte{_NBSP_MARKER}, []byte(" "), -1)
+		text = bytes.Replace(
+			text, []byte{_LINE_BREAK_MARKER}, []byte("\n"), -1)
+	}
+	return text
 }
 
 type renderer struct {
