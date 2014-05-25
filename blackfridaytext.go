@@ -92,7 +92,7 @@ func MarkdownToText(markdown []byte, color bool) ([][]string, []byte) {
 	if len(text) > 0 {
 		r := &renderer{width: GetWidth(), color: color}
 		text = blackfriday.Markdown(
-			markdown[position:], r, _BLACKFRIDAY_EXTENSIONS)
+			text, r, _BLACKFRIDAY_EXTENSIONS)
 		for r.headerLevel > 0 {
 			text = append(text, _INDENT_STOP_MARKER)
 			r.headerLevel--
