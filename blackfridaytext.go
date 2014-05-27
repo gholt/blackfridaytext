@@ -25,15 +25,18 @@ const (
 )
 
 const (
-	_ byte = iota
-	_LINE_BREAK_MARKER
-	_NBSP_MARKER
-	_INDENT_START_MARKER
-	_INDENT_FIRST_MARKER
-	_INDENT_SUBSEQUENT_MARKER
-	_INDENT_STOP_MARKER
-	_TABLE_ROW_MARKER
-	_TABLE_CELL_MARKER
+	_                         byte = iota // skip 0 NUL
+	_LINE_BREAK_MARKER                    // 1 SOH
+	_NBSP_MARKER                          // 2 STX
+	_INDENT_START_MARKER                  // 3 ETX
+	_INDENT_FIRST_MARKER                  // 4 EOT
+	_INDENT_SUBSEQUENT_MARKER             // 5 ENQ
+	_INDENT_STOP_MARKER                   // 6 ACK
+	_TABLE_ROW_MARKER                     // 7 BEL
+	_TABLE_CELL_MARKER                    // 8 BS
+	_                                     // 9 TAB
+	_                                     // 10 LF
+	_HRULE_MARKER                         // 11 VT
 )
 
 type ansiEscapeCodes struct {
@@ -197,9 +200,9 @@ func (r *renderer) Header(
 
 func (r *renderer) HRule(out *bytes.Buffer) {
 	r.ensureBlankLine(out)
-	for i := r.width; i > 0; i-- {
-		out.WriteByte('-')
-	}
+	out.WriteByte(_HRULE_MARKER)
+	out.WriteByte('-')
+	r.ensureBlankLine(out)
 }
 
 func (r *renderer) List(out *bytes.Buffer, text func() bool, flags int) {
@@ -638,6 +641,16 @@ func wrapBytes(text []byte, indent1 []byte, indent2 []byte, width int) []byte {
 	}
 	var out bytes.Buffer
 	for _, line := range bytes.Split(text, []byte{_LINE_BREAK_MARKER}) {
+		if len(line) == 2 && line[0] == _HRULE_MARKER {
+			var subout bytes.Buffer
+			subout.Write(indent1)
+			for subout.Len() < width {
+				subout.WriteByte(line[1])
+			}
+			out.Write(subout.Bytes())
+			out.WriteByte(_LINE_BREAK_MARKER)
+			continue
+		}
 		lineLen := 0
 		start := true
 		for _, word := range bytes.Split(line, []byte{' '}) {
