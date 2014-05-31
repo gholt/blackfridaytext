@@ -100,9 +100,9 @@ func MarkdownToText(markdown []byte, width int, color bool) ([][]string, []byte)
 
 // MarkdownToTextNoMetadata is the same as MarkdownToText only skipping the detection and parsing of any leading metadata.
 func MarkdownToTextNoMetadata(markdown []byte, width int, color bool) []byte {
-    if width < 1 {
-        width = GetWidth() + width
-    }
+	if width < 1 {
+		width = GetWidth() + width
+	}
 	r := &renderer{width: width, color: color}
 	text := blackfriday.Markdown(markdown, r, _BLACKFRIDAY_EXTENSIONS)
 	for r.headerLevel > 0 {

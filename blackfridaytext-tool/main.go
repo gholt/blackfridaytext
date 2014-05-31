@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-    width := 0 // Use the default width (from terminal or 79)
+	width := 0 // Use the default width (from terminal or 79)
 	color := true
 	if len(os.Args) == 2 && os.Args[1] == "--no-color" {
 		color = false
