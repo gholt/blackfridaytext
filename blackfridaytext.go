@@ -19,9 +19,7 @@ import (
 )
 
 const (
-	_BLACKFRIDAY_EXTENSIONS = blackfriday.EXTENSION_NO_INTRA_EMPHASIS |
-		blackfriday.EXTENSION_TABLES | blackfriday.EXTENSION_FENCED_CODE |
-		blackfriday.EXTENSION_STRIKETHROUGH
+	_BLACKFRIDAY_EXTENSIONS = blackfriday.EXTENSION_NO_INTRA_EMPHASIS | blackfriday.EXTENSION_TABLES | blackfriday.EXTENSION_FENCED_CODE | blackfriday.EXTENSION_AUTOLINK | blackfriday.EXTENSION_STRIKETHROUGH
 )
 
 const (
@@ -72,10 +70,12 @@ func GetWidth() int {
 
 // MarkdownToText parses the markdown text using the Blackfriday Markdown Processor and an internal renderer to return any metadata and the formatted text.
 //
+// The width int may be a positive integer for a specific width, 0 for the default width (attempted to get from terminal, 79 otherwise), or a negative number for a width relative to the default.
+//
 // The color bool is to indicate whether it is okay to emit ANSI color escape sequences or not.
 //
 // The metadata is a [][]string where each []string will have two elements, the metadata item name and the value. Metadata is an extension of standard Markdown and is documented at https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata -- this implementation currently differs in that it requires the trailing two spaces on each metadata line and doesn't support multiline values.
-func MarkdownToText(markdown []byte, color bool) ([][]string, []byte) {
+func MarkdownToText(markdown []byte, width int, color bool) ([][]string, []byte) {
 	metadata := make([][]string, 0)
 	position := 0
 	for _, line := range bytes.Split(markdown, []byte("\n")) {
@@ -95,11 +95,15 @@ func MarkdownToText(markdown []byte, color bool) ([][]string, []byte) {
 	if len(text) == 0 {
 		return metadata, []byte{}
 	}
-	return metadata, MarkdownToTextNoMetadata(text, color)
+	return metadata, MarkdownToTextNoMetadata(text, width, color)
 }
 
-func MarkdownToTextNoMetadata(markdown []byte, color bool) []byte {
-	r := &renderer{width: GetWidth(), color: color}
+// MarkdownToTextNoMetadata is the same as MarkdownToText only skipping the detection and parsing of any leading metadata.
+func MarkdownToTextNoMetadata(markdown []byte, width int, color bool) []byte {
+    if width < 1 {
+        width = GetWidth() + width
+    }
+	r := &renderer{width: width, color: color}
 	text := blackfriday.Markdown(markdown, r, _BLACKFRIDAY_EXTENSIONS)
 	for r.headerLevel > 0 {
 		text = append(text, _INDENT_STOP_MARKER)
