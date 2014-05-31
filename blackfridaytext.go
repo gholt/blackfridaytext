@@ -74,28 +74,38 @@ func GetWidth() int {
 //
 // The color bool is to indicate whether it is okay to emit ANSI color escape sequences or not.
 //
-// The metadata is a [][]string where each []string will have two elements, the metadata item name and the value. Metadata is an extension of standard Markdown and is documented at https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata -- this implementation currently differs in that it requires the trailing two spaces on each metadata line and doesn't support multiline values.
+// The metadata is a [][]string where each []string will have two elements, the metadata item name and the value. Metadata is an extension of standard Markdown and is documented at https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata -- this implementation currently differs in that it doesn't support multiline values.
 func MarkdownToText(markdown []byte, width int, color bool) ([][]string, []byte) {
-	metadata := make([][]string, 0)
-	position := 0
-	for _, line := range bytes.Split(markdown, []byte("\n")) {
-		if bytes.HasSuffix(line, []byte("  ")) {
-			colon := bytes.Index(line, []byte(":"))
-			if colon != -1 {
-				metadata = append(metadata, []string{
-					strings.Trim(string(line[:colon]), " "),
-					strings.Trim(string(line[colon+1:]), " ")})
-				position += len(line) + 1
-			}
-		} else {
-			break
-		}
-	}
+	metadata, position := MarkdownMetadata(markdown)
 	text := markdown[position:]
 	if len(text) == 0 {
 		return metadata, []byte{}
 	}
 	return metadata, MarkdownToTextNoMetadata(text, width, color)
+}
+
+// MarkdownMetadata parses just the metadata from the markdown source and returns the metadata and the position of the rest of the markdown.
+//
+// The metadata is a [][]string where each []string will have two elements, the metadata item name and the value. Metadata is an extension of standard Markdown and is documented at https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata -- this implementation currently differs in that it doesn't support multiline values.
+func MarkdownMetadata(markdown []byte) ([][]string, int) {
+	metadata := make([][]string, 0)
+	position := 0
+	for _, line := range bytes.Split(markdown, []byte("\n")) {
+		sline := strings.Trim(string(line), " ")
+		if sline == "" {
+			break
+		}
+		colon := strings.Index(sline, ":")
+		if colon == -1 {
+			// Since there's no blank line separating the metadata and content, we assume there wasn't actually any metadata.
+			return make([][]string, 0), 0
+		}
+		metadata = append(metadata, []string{
+			strings.Trim(sline[:colon], " "),
+			strings.Trim(sline[colon+1:], " ")})
+		position += len(line) + 1
+	}
+	return metadata, position
 }
 
 // MarkdownToTextNoMetadata is the same as MarkdownToText only skipping the detection and parsing of any leading metadata.
