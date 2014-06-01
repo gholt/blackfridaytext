@@ -74,7 +74,7 @@ func GetWidth() int {
 //
 // The color bool is to indicate whether it is okay to emit ANSI color escape sequences or not.
 //
-// The metadata is a [][]string where each []string will have two elements, the metadata item name and the value. Metadata is an extension of standard Markdown and is documented at https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata -- this implementation currently differs in that it doesn't support multiline values.
+// See MarkdownMetadata for a description of the [][]string metadata returned.
 func MarkdownToText(markdown []byte, width int, color bool) ([][]string, []byte) {
 	metadata, position := MarkdownMetadata(markdown)
 	text := markdown[position:]
@@ -87,6 +87,12 @@ func MarkdownToText(markdown []byte, width int, color bool) ([][]string, []byte)
 // MarkdownMetadata parses just the metadata from the markdown source and returns the metadata and the position of the rest of the markdown.
 //
 // The metadata is a [][]string where each []string will have two elements, the metadata item name and the value. Metadata is an extension of standard Markdown and is documented at https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata -- this implementation currently differs in that it doesn't support multiline values.
+//
+// In addition, the rest of markdown is scanned for lines containing only "///".
+//
+// If there is one "///" line, the text above that mark is considered the "Summary" metadata item; the summary will also be treated as part of the content (with the "///" line omitted). This is known as a "soft break".
+//
+// If there are two "///" lines, one right after the other, the summary will only be contained in the "Summary" metadata item and not part of the main content. This is known as a "hard break".
 func MarkdownMetadata(markdown []byte) ([][]string, int) {
 	metadata := make([][]string, 0)
 	position := 0
@@ -98,12 +104,21 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 		colon := strings.Index(sline, ":")
 		if colon == -1 {
 			// Since there's no blank line separating the metadata and content, we assume there wasn't actually any metadata.
-			return make([][]string, 0), 0
+			metadata = make([][]string, 0)
+			position = 0
+			break
 		}
 		metadata = append(metadata, []string{
 			strings.Trim(sline[:colon], " "),
 			strings.Trim(sline[colon+1:], " ")})
 		position += len(line) + 1
+	}
+	loc := bytes.Index(markdown[position:], []byte("\n///\n"))
+	if loc != -1 {
+		metadata = append(metadata, []string{"Summary", string(markdown[position:loc])})
+		if string(markdown[position+loc+5:position+loc+9]) == "///\n" {
+			position += loc + 9
+		}
 	}
 	return metadata, position
 }
@@ -114,6 +129,7 @@ func MarkdownToTextNoMetadata(markdown []byte, width int, color bool) []byte {
 		width = GetWidth() + width
 	}
 	r := &renderer{width: width, color: color}
+	markdown = bytes.Replace(markdown, []byte("\n///\n"), []byte(""), -1)
 	text := blackfriday.Markdown(markdown, r, _BLACKFRIDAY_EXTENSIONS)
 	for r.headerLevel > 0 {
 		text = append(text, _INDENT_STOP_MARKER)
