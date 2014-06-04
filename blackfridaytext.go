@@ -101,7 +101,7 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 		if sline == "" {
 			break
 		}
-		colon := strings.Index(sline, ":")
+		colon := strings.Index(sline, ": ")
 		if colon == -1 {
 			// Since there's no blank line separating the metadata and content, we assume there wasn't actually any metadata.
 			metadata = make([][]string, 0)
@@ -115,7 +115,7 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 	}
 	loc := bytes.Index(markdown[position:], []byte("\n///\n"))
 	if loc != -1 {
-		metadata = append(metadata, []string{"Summary", string(markdown[position:loc])})
+		metadata = append(metadata, []string{"Summary", string(markdown[position : position+loc])})
 		if string(markdown[position+loc+5:position+loc+9]) == "///\n" {
 			position += loc + 9
 		}
