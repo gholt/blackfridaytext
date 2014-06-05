@@ -1,6 +1,6 @@
 # Blackfriday Text
 
-Package blackfridaytext contains an experimental text renderer for the Blackfriday Markdown Processor http://github.com/russross/blackfriday.
+Package blackfridaytext contains a text renderer for the Blackfriday Markdown Processor http://github.com/russross/blackfriday.
 
 ## Example
 
