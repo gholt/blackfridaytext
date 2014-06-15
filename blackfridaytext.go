@@ -1,9 +1,6 @@
-// This renderer is available at http://github.com/gholt/blackfridaytext and is
-// Copyright © 2014 Gregory Holt <greg@brim.net>.
-//
-// Distributed under the Simplified BSD License.
-//
-// See README.md for details.
+// Copyright 2014 Gregory Holt. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 // Package blackfridaytext contains an experimental text renderer for the
 // Blackfriday Markdown Processor http://github.com/russross/blackfriday.
@@ -68,11 +65,16 @@ func GetWidth() int {
 	return width - 1
 }
 
-// MarkdownToText parses the markdown text using the Blackfriday Markdown Processor and an internal renderer to return any metadata and the formatted text.
+// MarkdownToText parses the markdown text using the Blackfriday Markdown
+// Processor and an internal renderer to return any metadata and the formatted
+// text.
 //
-// The width int may be a positive integer for a specific width, 0 for the default width (attempted to get from terminal, 79 otherwise), or a negative number for a width relative to the default.
+// The width int may be a positive integer for a specific width, 0 for the
+// default width (attempted to get from terminal, 79 otherwise), or a negative
+// number for a width relative to the default.
 //
-// The color bool is to indicate whether it is okay to emit ANSI color escape sequences or not.
+// The color bool is to indicate whether it is okay to emit ANSI color escape
+// sequences or not.
 //
 // See MarkdownMetadata for a description of the [][]string metadata returned.
 func MarkdownToText(markdown []byte, width int, color bool) ([][]string, []byte) {
@@ -84,15 +86,26 @@ func MarkdownToText(markdown []byte, width int, color bool) ([][]string, []byte)
 	return metadata, MarkdownToTextNoMetadata(text, width, color)
 }
 
-// MarkdownMetadata parses just the metadata from the markdown source and returns the metadata and the position of the rest of the markdown.
+// MarkdownMetadata parses just the metadata from the markdown source and
+// returns the metadata and the position of the rest of the markdown.
 //
-// The metadata is a [][]string where each []string will have two elements, the metadata item name and the value. Metadata is an extension of standard Markdown and is documented at https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata -- this implementation currently differs in that it doesn't support multiline values.
+// The metadata is a [][]string where each []string will have two elements, the
+// metadata item name and the value. Metadata is an extension of standard
+// Markdown and is documented at
+// https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata
+// -- this implementation currently differs in that it doesn't support
+// multiline values.
 //
-// In addition, the rest of markdown is scanned for lines containing only "///".
+// In addition, the rest of markdown is scanned for lines containing only
+// "///".
 //
-// If there is one "///" line, the text above that mark is considered the "Summary" metadata item; the summary will also be treated as part of the content (with the "///" line omitted). This is known as a "soft break".
+// If there is one "///" line, the text above that mark is considered the
+// "Summary" metadata item; the summary will also be treated as part of the
+// content (with the "///" line omitted). This is known as a "soft break".
 //
-// If there are two "///" lines, one right after the other, the summary will only be contained in the "Summary" metadata item and not part of the main content. This is known as a "hard break".
+// If there are two "///" lines, one right after the other, the summary will
+// only be contained in the "Summary" metadata item and not part of the main
+// content. This is known as a "hard break".
 func MarkdownMetadata(markdown []byte) ([][]string, int) {
 	metadata := make([][]string, 0)
 	position := 0
@@ -103,7 +116,8 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 		}
 		colon := strings.Index(sline, ": ")
 		if colon == -1 {
-			// Since there's no blank line separating the metadata and content, we assume there wasn't actually any metadata.
+			// Since there's no blank line separating the metadata and content,
+			// we assume there wasn't actually any metadata.
 			metadata = make([][]string, 0)
 			position = 0
 			break
@@ -123,7 +137,8 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 	return metadata, position
 }
 
-// MarkdownToTextNoMetadata is the same as MarkdownToText only skipping the detection and parsing of any leading metadata.
+// MarkdownToTextNoMetadata is the same as MarkdownToText only skipping the
+// detection and parsing of any leading metadata.
 func MarkdownToTextNoMetadata(markdown []byte, width int, color bool) []byte {
 	if width < 1 {
 		width = GetWidth() + width
@@ -317,12 +332,12 @@ func (r *renderer) Table(
 	for _, row := range headerRows {
 		for column, cell := range row {
 			out.WriteByte('|')
-			out.WriteByte(' ')
+			out.WriteByte(_NBSP_MARKER)
 			out.Write(cell)
 			for i := len(string(cell)); i < widths[column]; i++ {
-				out.WriteByte(' ')
+				out.WriteByte(_NBSP_MARKER)
 			}
-			out.WriteByte(' ')
+			out.WriteByte(_NBSP_MARKER)
 		}
 		out.WriteByte('|')
 		out.WriteByte(_LINE_BREAK_MARKER)
@@ -338,12 +353,12 @@ func (r *renderer) Table(
 	for _, row := range bodyRows {
 		for column, cell := range row {
 			out.WriteByte('|')
-			out.WriteByte(' ')
+			out.WriteByte(_NBSP_MARKER)
 			out.Write(cell)
 			for i := len(string(cell)); i < widths[column]; i++ {
-				out.WriteByte(' ')
+				out.WriteByte(_NBSP_MARKER)
 			}
-			out.WriteByte(' ')
+			out.WriteByte(_NBSP_MARKER)
 		}
 		out.WriteByte('|')
 		out.WriteByte(_LINE_BREAK_MARKER)

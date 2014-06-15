@@ -13,7 +13,8 @@ func main() {
 		color = false
 	}
 	markdown, _ := ioutil.ReadAll(os.Stdin)
-	metadata, output := blackfridaytext.MarkdownToText(markdown, width, color)
+	metadata, output := blackfridaytext.MarkdownToText(
+		markdown, width, color)
 	for _, item := range metadata {
 		name, value := item[0], item[1]
 		os.Stdout.WriteString(name)
