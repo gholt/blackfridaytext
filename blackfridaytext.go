@@ -54,15 +54,18 @@ var ansiEscape = ansiEscapeCodes{
 }
 
 func GetWidth() int {
-	tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0600)
-	if err != nil {
+	var tty *os.File
+	var err error
+	if tty, err = os.OpenFile("/dev/tty", os.O_RDWR, 0600); err != nil {
 		tty = os.Stdout
+	} else {
+		defer tty.Close()
 	}
-	width, _, err := terminal.GetSize(int(tty.Fd()))
-	if err != nil {
+	if width, _, err := terminal.GetSize(int(tty.Fd())); err != nil {
 		return 79
+	} else {
+		return width - 1
 	}
-	return width - 1
 }
 
 // MarkdownToText parses the markdown text using the Blackfriday Markdown
