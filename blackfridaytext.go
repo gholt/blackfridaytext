@@ -15,6 +15,12 @@ import (
 	"strings"
 )
 
+type Options struct {
+	Width  int
+	Color  bool
+	Indent string
+}
+
 const (
 	_BLACKFRIDAY_EXTENSIONS = blackfriday.EXTENSION_NO_INTRA_EMPHASIS | blackfriday.EXTENSION_TABLES | blackfriday.EXTENSION_FENCED_CODE | blackfriday.EXTENSION_AUTOLINK | blackfriday.EXTENSION_STRIKETHROUGH
 )
@@ -80,13 +86,13 @@ func GetWidth() int {
 // sequences or not.
 //
 // See MarkdownMetadata for a description of the [][]string metadata returned.
-func MarkdownToText(markdown []byte, width int, color bool) ([][]string, []byte) {
+func MarkdownToText(markdown []byte, opt *Options) ([][]string, []byte) {
 	metadata, position := MarkdownMetadata(markdown)
 	text := markdown[position:]
 	if len(text) == 0 {
 		return metadata, []byte{}
 	}
-	return metadata, MarkdownToTextNoMetadata(text, width, color)
+	return metadata, MarkdownToTextNoMetadata(text, opt)
 }
 
 // MarkdownMetadata parses just the metadata from the markdown source and
@@ -142,11 +148,14 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 
 // MarkdownToTextNoMetadata is the same as MarkdownToText only skipping the
 // detection and parsing of any leading metadata.
-func MarkdownToTextNoMetadata(markdown []byte, width int, color bool) []byte {
-	if width < 1 {
-		width = GetWidth() + width
+func MarkdownToTextNoMetadata(markdown []byte, opt *Options) []byte {
+	if opt == nil {
+		opt = &Options{}
 	}
-	r := &renderer{width: width, color: color}
+	if opt.Width < 1 {
+		opt.Width = GetWidth() + opt.Width
+	}
+	r := &renderer{width: opt.Width, color: opt.Color}
 	markdown = bytes.Replace(markdown, []byte("\n///\n"), []byte(""), -1)
 	text := blackfriday.Markdown(markdown, r, _BLACKFRIDAY_EXTENSIONS)
 	for r.headerLevel > 0 {
@@ -156,7 +165,7 @@ func MarkdownToTextNoMetadata(markdown []byte, width int, color bool) []byte {
 	if len(text) > 0 {
 		text = bytes.Replace(text, []byte(" \n"), []byte(" "), -1)
 		text = bytes.Replace(text, []byte("\n"), []byte(" "), -1)
-		text = reflow(text, []byte{}, []byte{}, r.width)
+		text = reflow(text, []byte(opt.Indent), []byte(opt.Indent), r.width)
 		text = bytes.Replace(text, []byte{_NBSP_MARKER}, []byte(" "), -1)
 		text = bytes.Replace(
 			text, []byte{_LINE_BREAK_MARKER}, []byte("\n"), -1)
