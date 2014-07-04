@@ -9,24 +9,28 @@ Processor http://github.com/russross/blackfriday.
 package main
 
 import (
-	"github.com/gholt/blackfridaytext"
-	"io/ioutil"
-	"os"
+    "github.com/gholt/blackfridaytext"
+    "io/ioutil"
+    "os"
 )
 
 func main() {
-	markdown, _ := ioutil.ReadAll(os.Stdin)
-	metadata, output := blackfridaytext.MarkdownToText(markdown, nil)
-	for _, item := range metadata {
-		name, value := item[0], item[1]
-		os.Stdout.WriteString(name)
-		os.Stdout.WriteString(":\n    ")
-		os.Stdout.WriteString(value)
-		os.Stdout.WriteString("\n")
-	}
-	os.Stdout.WriteString("\n")
-	os.Stdout.Write(output)
-	os.Stdout.WriteString("\n")
+    opt := &blackfridaytext.Options{Color: true}
+    if len(os.Args) == 2 && os.Args[1] == "--no-color" {
+        opt.Color = false
+    }
+    markdown, _ := ioutil.ReadAll(os.Stdin)
+    metadata, output := blackfridaytext.MarkdownToText(markdown, opt)
+    for _, item := range metadata {
+        name, value := item[0], item[1]
+        os.Stdout.WriteString(name)
+        os.Stdout.WriteString(":\n    ")
+        os.Stdout.WriteString(value)
+        os.Stdout.WriteString("\n")
+    }
+    os.Stdout.WriteString("\n")
+    os.Stdout.Write(output)
+    os.Stdout.WriteString("\n")
 }
 ```
 
@@ -36,7 +40,7 @@ func main() {
 
 ---
 
-# Sample Input
+## Sample Input
 
 To give an idea of what the output looks like, I've run this document through
 the renderer and appended the output.
@@ -56,7 +60,9 @@ Name  | Age
 Bob   | 27
 Alice | 23
 
-# No Color Output
+---
+
+## No-Color Output
 
 ```
 --[ Blackfriday Text ]--
@@ -75,14 +81,12 @@ Alice | 23
         )
 
         func main() {
-            width := 0 // Use the default width (from terminal or 79)
-            color := true
+            opt := &blackfridaytext.Options{Color: true}
             if len(os.Args) == 2 && os.Args[1] == "--no-color" {
-                color = false
+                opt.Color = false
             }
             markdown, _ := ioutil.ReadAll(os.Stdin)
-            metadata, output := blackfridaytext.MarkdownToText(
-                markdown, width, color)
+            metadata, output := blackfridaytext.MarkdownToText(markdown, opt)
             for _, item := range metadata {
                 name, value := item[0], item[1]
                 os.Stdout.WriteString(name)
@@ -101,30 +105,32 @@ Alice | 23
 
         -----------------------------------------------------------------------
 
---[ Sample Input ]--
+    --[ Sample Input ]--
 
-    To give an idea of what the output looks like, I've run this document
-    through the renderer and appended the output.
-      * Here is a sample list.
-      * Two
-          * And a sublist.
-          * Two, part B.
-      * Three
+        To give an idea of what the output looks like, I've run this document
+        through the renderer and appended the output.
+          * Here is a sample list.
+          * Two
+              * And a sublist.
+              * Two, part B.
+          * Three
 
-    *Emphasis*, **Double Emphasis**, ***Triple Emphasis***, ~~Strikethrough~~,
-    and "code spans" along with http://auto/linking and [explicit linking]
-    http://explicit/linking.
+        *Emphasis*, **Double Emphasis**, ***Triple Emphasis***,
+        ~~Strikethrough~~, and "code spans" along with http://auto/linking and
+        [explicit linking] http://explicit/linking.
 
-    Here's a quick table from the blackfriday example:
+        Here's a quick table from the blackfriday example:
 
-    +-------+-----+
-    | Name  | Age |
-    +-------+-----+
-    | Bob   | 27  |
-    | Alice | 23  |
-    +-------+-----+
+        +-------+-----+
+        | Name  | Age |
+        +-------+-----+
+        | Bob   | 27  |
+        | Alice | 23  |
+        +-------+-----+
 ```
 
-# Color Output
+---
 
-![](screenshot.jpg)
+## Color Output
+
+![](screenshot.png)

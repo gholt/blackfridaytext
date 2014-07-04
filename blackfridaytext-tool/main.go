@@ -7,8 +7,12 @@ import (
 )
 
 func main() {
+	opt := &blackfridaytext.Options{Color: true}
+	if len(os.Args) == 2 && os.Args[1] == "--no-color" {
+		opt.Color = false
+	}
 	markdown, _ := ioutil.ReadAll(os.Stdin)
-	metadata, output := blackfridaytext.MarkdownToText(markdown, nil)
+	metadata, output := blackfridaytext.MarkdownToText(markdown, opt)
 	for _, item := range metadata {
 		name, value := item[0], item[1]
 		os.Stdout.WriteString(name)
