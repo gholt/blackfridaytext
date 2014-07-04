@@ -1,7 +1,17 @@
 # Blackfriday Text
 
-Package blackfridaytext contains a text renderer for the Blackfriday Markdown
-Processor http://github.com/russross/blackfriday.
+Package blackfridaytext contains a text renderer for the [Blackfriday Markdown
+Processor](http://github.com/russross/blackfriday).
+
+[API Documentation](http://godoc.org/github.com/gholt/blackfridaytext)
+
+The master branch is the latest stable version.  
+Other branches like v1 are also stable versions.  
+The dev branch is the latest development work.  
+
+> Copyright 2014 Gregory Holt. All rights reserved.  
+> Use of this source code is governed by a BSD-style  
+> license that can be found in the LICENSE file.
 
 ## Example Code
 
@@ -33,10 +43,6 @@ func main() {
     os.Stdout.WriteString("\n")
 }
 ```
-
-> Copyright 2014 Gregory Holt. All rights reserved.  
-> Use of this source code is governed by a BSD-style  
-> license that can be found in the LICENSE file.
 
 ---
 
