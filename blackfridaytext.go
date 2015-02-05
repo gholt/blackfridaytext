@@ -9,9 +9,10 @@ package blackfridaytext
 import (
 	"bytes"
 	"fmt"
-	"github.com/gholt/brimtext"
-	"github.com/russross/blackfriday"
 	"strings"
+
+	"github.com/gholt/blackfriday"
+	"github.com/gholt/brimtext-v1"
 )
 
 type Options struct {
@@ -338,6 +339,12 @@ func (rend *renderer) FootnoteItem(out *bytes.Buffer, name, text []byte, flags i
 	out.WriteByte('[')
 	out.Write(name)
 	out.WriteByte(']')
+}
+
+func (rend *renderer) TitleBlock(out *bytes.Buffer, text []byte) {
+	text = bytes.TrimPrefix(text, []byte("% "))
+	text = bytes.Replace(text, []byte("\n% "), []byte("\n"), -1)
+	out.Write(text)
 }
 
 func (rend *renderer) AutoLink(out *bytes.Buffer, link []byte, kind int) {

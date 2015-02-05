@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/gholt/blackfridaytext"
 	"io/ioutil"
 	"os"
+
+	"github.com/gholt/blackfridaytext"
 )
 
 func main() {
