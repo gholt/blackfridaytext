@@ -6,7 +6,7 @@
 This is the latest development area for the package.  
 For the latest stable version of the package, switch to the
 [v1 branch](https://github.com/gholt/blackfridaytext/tree/v1)  
-or use `gopkg.in/gholt/brimtext.v1` as the import path.  
+or use `gopkg.in/gholt/blackfridaytext.v1` as the import path.  
 Also, you'd want to use the
 [V1 API Documentation](http://godoc.org/gopkg.in/gholt/blackfridaytext.v1).
 
@@ -83,7 +83,7 @@ Alice | 23
         This is the latest development area for the package.
         For the latest stable version of the package, switch to the [v1
         branch] https://github.com/gholt/blackfridaytext/tree/v1
-        or use "gopkg.in/gholt/brimtext.v1" as the import path.
+        or use "gopkg.in/gholt/blackfridaytext.v1" as the import path.
         Also, you'd want to use the [V1 API Documentation]
         http://godoc.org/gopkg.in/gholt/blackfridaytext.v1.
 
