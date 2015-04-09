@@ -1,12 +1,10 @@
-// Copyright 2014 Gregory Holt. All rights reserved.
+// Copyright Gregory Holt. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package blackfridaytext
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestBasic(t *testing.T) {
 	in := "Basic Test"

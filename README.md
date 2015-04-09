@@ -1,14 +1,16 @@
 # Blackfriday Text
-
-Package blackfridaytext contains a text renderer for the [Blackfriday Markdown
-Processor](http://github.com/russross/blackfriday).
+## A text renderer for the [Blackfriday Markdown Processor](http://github.com/russross/blackfriday).
 
 [API Documentation](http://godoc.org/github.com/gholt/blackfridaytext)
 
 This is the latest development area for the package.  
-For a stable version of the package, see http://github.com/gholt/blackfridaytext-v1
+For the latest stable version of the package, switch to the
+[v1 branch](https://github.com/gholt/blackfridaytext/tree/v1)  
+or use `gopkg.in/gholt/brimtext.v1` as the import path.  
+Also, you'd want to use the
+[V1 API Documentation](http://godoc.org/gopkg.in/gholt/blackfridaytext.v1).
 
-> Copyright 2014 Gregory Holt. All rights reserved.  
+> Copyright Gregory Holt. All rights reserved.  
 > Use of this source code is governed by a BSD-style  
 > license that can be found in the LICENSE file.
 
@@ -18,9 +20,10 @@ For a stable version of the package, see http://github.com/gholt/blackfridaytext
 package main
 
 import (
-    "github.com/gholt/blackfridaytext"
     "io/ioutil"
     "os"
+
+    "github.com/gholt/blackfridaytext"
 )
 
 func main() {
@@ -104,7 +107,7 @@ Alice | 23
             os.Stdout.WriteString("\n")
         }
 
-        > Copyright 2014 Gregory Holt. All rights reserved.
+        > Copyright Gregory Holt. All rights reserved.
         > Use of this source code is governed by a BSD-style
         > license that can be found in the LICENSE file.
 
