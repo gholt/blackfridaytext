@@ -4,15 +4,6 @@
 
 // Package blackfridaytext contains a text renderer for the
 // Blackfriday Markdown Processor http://github.com/russross/blackfriday.
-//
-// This is the latest development area for the package.
-//
-// For the latest stable version of the package, switch to the
-// v1 branch at https://github.com/gholt/blackfridaytext/tree/v1
-// or use gopkg.in/gholt/blackfridaytext.v1 as the import path.
-//
-// Also, you'd want to use http://godoc.org/gopkg.in/gholt/blackfridaytext.v1
-// for the v1 documentation.
 package blackfridaytext
 
 import (
@@ -20,8 +11,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gholt/brimtext"
 	"github.com/russross/blackfriday"
-	"gopkg.in/gholt/brimtext.v1"
 )
 
 type Options struct {

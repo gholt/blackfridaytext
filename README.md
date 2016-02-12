@@ -3,13 +3,6 @@
 
 [API Documentation](http://godoc.org/github.com/gholt/blackfridaytext)
 
-This is the latest development area for the package.  
-For the latest stable version of the package, switch to the
-[v1 branch](https://github.com/gholt/blackfridaytext/tree/v1)  
-or use `gopkg.in/gholt/blackfridaytext.v1` as the import path.  
-Also, you'd want to use the
-[V1 API Documentation](http://godoc.org/gopkg.in/gholt/blackfridaytext.v1).
-
 > Copyright Gregory Holt. All rights reserved.  
 > Use of this source code is governed by a BSD-style  
 > license that can be found in the LICENSE file.
@@ -79,13 +72,6 @@ Alice | 23
         http://github.com/russross/blackfriday. ]--
 
         [API Documentation] http://godoc.org/github.com/gholt/blackfridaytext
-
-        This is the latest development area for the package.
-        For the latest stable version of the package, switch to the [v1
-        branch] https://github.com/gholt/blackfridaytext/tree/v1
-        or use "gopkg.in/gholt/blackfridaytext.v1" as the import path.
-        Also, you'd want to use the [V1 API Documentation]
-        http://godoc.org/gopkg.in/gholt/blackfridaytext.v1.
 
         > Copyright Gregory Holt. All rights reserved.
         > Use of this source code is governed by a BSD-style
