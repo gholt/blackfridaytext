@@ -179,6 +179,7 @@ func MarkdownToTextNoMetadata(markdown []byte, opt *Options) []byte {
 
 type renderer struct {
 	width             int
+	currentIndent     int
 	color             bool
 	tableAlignOptions *brimtext.AlignOptions
 	level             int
@@ -213,8 +214,10 @@ func (rend *renderer) BlockQuote(out *bytes.Buffer, text []byte) {
 	out.WriteByte(markIndent1)
 	out.WriteString("> ")
 	out.WriteByte(markIndent2)
+	rend.currentIndent += 2
 	out.Write(bytes.Trim(text, string([]byte{markLineBreak})))
 	out.WriteByte(markIndentStop)
+	rend.currentIndent -= 2
 }
 
 func (rend *renderer) BlockHtml(out *bytes.Buffer, text []byte) {
@@ -229,6 +232,7 @@ func (rend *renderer) Header(out *bytes.Buffer, text func() bool, level int, id 
 	level--
 	for rend.level > level {
 		out.WriteByte(markIndentStop)
+		rend.currentIndent -= 4
 		rend.level--
 	}
 	if len(rend.headerPrefix) > 0 {
@@ -240,6 +244,7 @@ func (rend *renderer) Header(out *bytes.Buffer, text func() bool, level int, id 
 			out.WriteByte(' ')
 		}
 		out.WriteByte(markIndent2)
+		rend.currentIndent += len(rend.headerPrefix) + 1
 	}
 	if rend.color {
 		out.Write(brimtext.ANSIEscape.Bold)
@@ -258,6 +263,7 @@ func (rend *renderer) Header(out *bytes.Buffer, text func() bool, level int, id 
 	}
 	if len(rend.headerPrefix) > 0 {
 		out.WriteByte(markIndentStop)
+		rend.currentIndent -= len(rend.headerPrefix) + 1
 	}
 	for rend.level <= level {
 		out.WriteByte(markIndentStart)
@@ -265,6 +271,7 @@ func (rend *renderer) Header(out *bytes.Buffer, text func() bool, level int, id 
 		out.WriteByte(markIndent1)
 		out.WriteString("    ")
 		out.WriteByte(markIndent2)
+		rend.currentIndent += 4
 		rend.level++
 	}
 	rend.ensureBlankLine(out)
@@ -310,8 +317,10 @@ func (rend *renderer) List(out *bytes.Buffer, text func() bool, flags int) {
 				out.WriteByte(' ')
 			}
 			out.WriteByte(markIndent2)
+			rend.currentIndent += max
 			out.Write(bytes.Trim(dl[i+1], string([]byte{markLineBreak})))
 			out.WriteByte(markIndentStop)
+			rend.currentIndent -= max
 		}
 	}
 }
@@ -326,8 +335,10 @@ func (rend *renderer) ListItem(out *bytes.Buffer, text []byte, flags int) {
 		out.WriteByte(markIndent1)
 		out.WriteString("    ")
 		out.WriteByte(markIndent2)
+		rend.currentIndent += 4
 		out.Write(bytes.Trim(text, string([]byte{markLineBreak})))
 		out.WriteByte(markIndentStop)
+		rend.currentIndent -= 4
 	}
 }
 
@@ -355,7 +366,11 @@ func (rend *renderer) Table(out *bytes.Buffer, header []byte, body []byte, colum
 			} else if columnData[c]&blackfriday.TABLE_ALIGNMENT_RIGHT != 0 {
 				opts.Alignments[c] = brimtext.Right
 			}
-			headerRow = append(headerRow, string(cell))
+			cellString := string(cell)
+			if len(cellString) > opts.Widths[c] {
+				opts.Widths[c] = len(cellString)
+			}
+			headerRow = append(headerRow, cellString)
 		}
 		if len(headerRow) > 0 && headerRow[0] != "omit" {
 			data = append(data, headerRow)
@@ -371,16 +386,73 @@ func (rend *renderer) Table(out *bytes.Buffer, header []byte, body []byte, colum
 		}
 		bodyRow := make([]string, 0)
 		cells := bytes.Split(row[:len(row)-1], []byte{markTableCell})
-		for _, cell := range cells {
-			bodyRow = append(bodyRow, string(cell))
+		for c, cell := range cells {
+			cellString := string(cell)
+			if len(cellString) > opts.Widths[c] {
+				opts.Widths[c] = len(cellString)
+			}
+			bodyRow = append(bodyRow, cellString)
 		}
 		data = append(data, bodyRow)
 	}
-	text := []byte(brimtext.Align(data, opts))
-	text = bytes.Replace(text, []byte{' '}, []byte{markNBSP}, -1)
-	text = bytes.Replace(text, []byte{'\n'}, []byte{markLineBreak}, -1)
+	aw := rend.width - rend.currentIndent - len(opts.RowFirstUD) - len(opts.RowLastUD)
+	if len(columnData) > 1 {
+		aw -= len(opts.RowSecondUD)
+	}
+	if len(columnData) > 2 {
+		aw -= len(opts.RowUD)*len(columnData) - 2
+	}
+	cw := 0
+	for _, w := range opts.Widths {
+		cw += w
+	}
+	ocw := cw
+	for cw > aw {
+		for i := 0; i < len(opts.Widths); i++ {
+			if opts.Widths[i] > 1 {
+				opts.Widths[i]--
+			}
+		}
+		cw = 0
+		for _, w := range opts.Widths {
+			cw += w
+		}
+		if cw == ocw {
+			break
+		}
+		ocw = cw
+	}
+	var text string
+	for {
+		good := true
+		text = brimtext.Align(data, opts)
+		for _, line := range strings.Split(text, "\n") {
+			if len(line) > aw {
+				good = false
+			}
+		}
+		if good {
+			break
+		}
+		ocw = cw
+		for i := 0; i < len(opts.Widths); i++ {
+			if opts.Widths[i] > 1 {
+				opts.Widths[i]--
+			}
+		}
+		cw = 0
+		for _, w := range opts.Widths {
+			cw += w
+		}
+		if cw == ocw {
+			break
+		}
+	}
+	textBytes := []byte(text)
+	textBytes = bytes.Replace(textBytes, []byte{' '}, []byte{markNBSP}, -1)
+	textBytes = bytes.Replace(textBytes, []byte{'\n'}, []byte{markLineBreak}, -1)
 	rend.ensureBlankLine(out)
-	out.Write(text)
+	out.Write(textBytes)
 }
 
 func (rend *renderer) TableRow(out *bytes.Buffer, text []byte) {

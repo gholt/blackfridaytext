@@ -250,6 +250,12 @@ Table | With | Alignments
 L | R | C
 
 
+Table | That | Is | Very | Wide
+--- | --- | --- | --- | ---
+This is to test | the wrapping | capabilities of the | table, as best as | it can.
+|
+There is only so | much it can | do, of course. | But it should do the best | it can.
+
 `
 	out := string(MarkdownToTextNoMetadata([]byte(in), &Options{
 		Width:        40,
@@ -332,6 +338,22 @@ L | R | C
     +-------+------+------------+
     | L     |    R |     C      |
     +-------+------+------------+
+
+    +-------+----------+--------------+--------+------+
+    | Table | That     | Is           | Very   | Wide |
+    +-------+----------+--------------+--------+------+
+    | This  | the      | capabilities | table, | it   |
+    | is    | wrapping | of           | as     | can. |
+    | to    |          | the          | best   |      |
+    | test  |          |              | as     |      |
+    |       |          |              |        |      |
+    | There | much     | do,          | But    | it   |
+    | is    | it       | of           | it     | can. |
+    | only  | can      | course.      | should |      |
+    | so    |          |              | do     |      |
+    |       |          |              | the    |      |
+    |       |          |              | best   |      |
+    +-------+----------+--------------+--------+------+
 `
 	if out != exp {
 		t.Errorf("%#v\n!=\n%#v", out, exp)
