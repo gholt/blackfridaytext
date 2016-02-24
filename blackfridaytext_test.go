@@ -242,6 +242,13 @@ quick
 for
 : testing
 
+TODO: Seems there's a bug with switching from definition lists to tables in
+BlackFriday?
+
+Table | With | Alignments
+:--- | ---: | :---:
+L | R | C
+
 
 `
 	out := string(MarkdownToTextNoMetadata([]byte(in), &Options{
@@ -315,6 +322,16 @@ for
 
     quick  definition list
     for    testing
+
+    TODO: Seems there's a bug with
+    switching from definition lists to
+    tables in BlackFriday?
+
+    +-------+------+------------+
+    | Table | With | Alignments |
+    +-------+------+------------+
+    | L     |    R |     C      |
+    +-------+------+------------+
 `
 	if out != exp {
 		t.Errorf("%#v\n!=\n%#v", out, exp)

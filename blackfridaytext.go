@@ -340,13 +340,21 @@ func (rend *renderer) Paragraph(out *bytes.Buffer, text func() bool) {
 }
 
 func (rend *renderer) Table(out *bytes.Buffer, header []byte, body []byte, columnData []int) {
-	rend.ensureBlankLine(out)
+	opts := &brimtext.AlignOptions{}
+	*opts = *rend.tableAlignOptions
+	opts.Widths = make([]int, len(columnData))
+	opts.Alignments = make([]brimtext.Alignment, len(columnData))
 	data := make([][]string, 0)
 	rows := bytes.Split(header[:len(header)-1], []byte{markTableRow})
 	for _, row := range rows {
 		headerRow := make([]string, 0)
 		cells := bytes.Split(row[:len(row)-1], []byte{markTableCell})
-		for _, cell := range cells {
+		for c, cell := range cells {
+			if columnData[c]&blackfriday.TABLE_ALIGNMENT_CENTER == blackfriday.TABLE_ALIGNMENT_CENTER {
+				opts.Alignments[c] = brimtext.Center
+			} else if columnData[c]&blackfriday.TABLE_ALIGNMENT_RIGHT != 0 {
+				opts.Alignments[c] = brimtext.Right
+			}
 			headerRow = append(headerRow, string(cell))
 		}
 		if len(headerRow) > 0 && headerRow[0] != "omit" {
@@ -368,9 +376,10 @@ func (rend *renderer) Table(out *bytes.Buffer, header []byte, body []byte, colum
 		}
 		data = append(data, bodyRow)
 	}
-	text := []byte(brimtext.Align(data, rend.tableAlignOptions))
+	text := []byte(brimtext.Align(data, opts))
 	text = bytes.Replace(text, []byte{' '}, []byte{markNBSP}, -1)
 	text = bytes.Replace(text, []byte{'\n'}, []byte{markLineBreak}, -1)
+	rend.ensureBlankLine(out)
 	out.Write(text)
 }
 
