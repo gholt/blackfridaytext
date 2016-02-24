@@ -24,43 +24,41 @@ type Options struct {
 	// Color set true will allow ANSI Color Escape Codes.
 	Color bool
 	// Indent1 is the prefix for the first line.
-	Indent1 string
+	Indent1 []byte
 	// Indent2 is the prefix for any second or subsequent lines.
-	Indent2           string
+	Indent2           []byte
 	TableAlignOptions *brimtext.AlignOptions
 	// HeaderPrefix is the prefix before any header line.
-	HeaderPrefix string
+	HeaderPrefix []byte
 	// HeaderSuffix is the suffix after any header line.
-	HeaderSuffix string
+	HeaderSuffix []byte
 }
 
-func parseOptions(opt *Options) (int, bool, []byte, []byte, *brimtext.AlignOptions, []byte, []byte) {
-	var width int
-	var color bool
-	var indent1 []byte
-	var indent2 []byte
-	var tableAlignOptions *brimtext.AlignOptions
-	var headerPrefix []byte
-	var headerSuffix []byte
-	if opt != nil {
-		width = opt.Width
-		color = opt.Color
-		indent1 = []byte(opt.Indent1)
-		indent2 = []byte(opt.Indent2)
-		tableAlignOptions = opt.TableAlignOptions
-		headerPrefix = []byte(opt.HeaderPrefix)
-		headerSuffix = []byte(opt.HeaderSuffix)
+func resolveOpts(opts *Options) *Options {
+    ropts := &Options{}
+	if opts != nil {
+        *ropts = *opts
+    }
+	if ropts.Width < 1 {
+		ropts.Width = brimtext.GetTTYWidth() - 1 + ropts.Width
 	}
-	if width < 1 {
-		width = brimtext.GetTTYWidth() - 1 + width
+	if ropts.Width < 10 {
+		ropts.Width = 10
 	}
-	if width < 10 {
-		width = 10
+	if ropts.TableAlignOptions == nil {
+        if ropts.Color {
+            ropts.TableAlignOptions = brimtext.NewUnicodeBoxedAlignOptions()
+        } else {
+            ropts.TableAlignOptions = brimtext.NewSimpleAlignOptions()
+        }
 	}
-	if tableAlignOptions == nil {
-		tableAlignOptions = brimtext.NewSimpleAlignOptions()
-	}
-	return width, color, indent1, indent2, tableAlignOptions, headerPrefix, headerSuffix
+    if ropts.HeaderPrefix == nil {
+        ropts.HeaderPrefix = []byte("--[")
+    }
+    if ropts.HeaderSuffix == nil {
+        ropts.HeaderSuffix = []byte("]--")
+    }
+	return ropts
 }
 
 const (
@@ -144,16 +142,16 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 }
 
 // MarkdownToTextNoMetadata is the same as MarkdownToText only skipping the
-// detection and parsing of any leading metadata. If opt is nil the defaults
+// detection and parsing of any leading metadata. If opts is nil the defaults
 // will be used.
-func MarkdownToTextNoMetadata(markdown []byte, opt *Options) []byte {
-	width, color, indent1, indent2, tableAlignOptions, headerPrefix, headerSuffix := parseOptions(opt)
+func MarkdownToTextNoMetadata(markdown []byte, opts *Options) []byte {
+    opts = resolveOpts(opts)
 	rend := &renderer{
-		width:             width,
-		color:             color,
-		tableAlignOptions: tableAlignOptions,
-		headerPrefix:      headerPrefix,
-		headerSuffix:      headerSuffix,
+		width:             opts.Width,
+		color:             opts.Color,
+		tableAlignOptions: opts.TableAlignOptions,
+		headerPrefix:      opts.HeaderPrefix,
+		headerSuffix:      opts.HeaderSuffix,
 	}
 	markdown = bytes.Replace(markdown, []byte("\n///\n"), []byte(""), -1)
 	txt := blackfriday.Markdown(markdown, rend,
@@ -170,7 +168,7 @@ func MarkdownToTextNoMetadata(markdown []byte, opt *Options) []byte {
 	if len(txt) > 0 {
 		txt = bytes.Replace(txt, []byte(" \n"), []byte(" "), -1)
 		txt = bytes.Replace(txt, []byte("\n"), []byte(" "), -1)
-		txt = reflow(txt, indent1, indent2, rend.width)
+		txt = reflow(txt, opts.Indent1, opts.Indent2, rend.width)
 		txt = bytes.Replace(txt, []byte{markNBSP}, []byte(" "), -1)
 		txt = bytes.Replace(txt, []byte{markLineBreak}, []byte("\n"), -1)
 	}

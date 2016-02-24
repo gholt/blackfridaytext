@@ -24,11 +24,7 @@ import (
 )
 
 func main() {
-    opt := &blackfridaytext.Options{
-        Color: true,
-        HeaderPrefix: "--[",
-        HeaderSuffix: "]--",
-    }
+    opt := &blackfridaytext.Options{Color: true}
     if len(os.Args) == 2 && os.Args[1] == "--no-color" {
         opt.Color = false
     }
@@ -78,6 +74,10 @@ Alice | 23
 
     --[ A text renderer for the [Blackfriday Markdown Processor]
         http://github.com/russross/blackfriday. ]--
+
+        This can be useful for quick displays of Markdown files, of course,
+        but one use I've found for it is nicer CLI output. For an example, see
+        the output of the "ring" command from http://github.com/gholt/ring
 
         [API Documentation] http://godoc.org/github.com/gholt/blackfridaytext
 

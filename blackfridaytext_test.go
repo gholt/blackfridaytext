@@ -257,11 +257,7 @@ This is to test | the wrapping | capabilities of the | table, as best as | it ca
 There is only so | much it can | do, of course. | But it should do the best | it can.
 
 `
-	out := string(MarkdownToTextNoMetadata([]byte(in), &Options{
-		Width:        40,
-		HeaderPrefix: "--[",
-		HeaderSuffix: "]--",
-	}))
+	out := string(MarkdownToTextNoMetadata([]byte(in), &Options{Width: 40}))
 	exp := `This is a general test of features.
 
 --[ Heading One ]--
