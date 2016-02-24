@@ -4,6 +4,17 @@
 
 // Package blackfridaytext contains a text renderer for the
 // Blackfriday Markdown Processor http://github.com/russross/blackfriday.
+//
+// The Markdown supported is that supported by BlackFriday itself, with its
+// tables, fenced code, autolinking, strikethrough, and definition lists turned
+// on.
+//
+// There is optional support for colorized output, as well as line wrapping and
+// reflowing elements such as tables.
+//
+// There is also optional support for Markdown Metadata
+// https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide#metadata
+// and summary information.
 package blackfridaytext
 
 import (
@@ -15,6 +26,8 @@ import (
 	"github.com/russross/blackfriday"
 )
 
+// Options contains the configuration for MarkdownToText and
+// MarkdownToTextNoMetadata.
 type Options struct {
 	// Width indicates how long to attempt to restrict lines to and may be a
 	// positive int for a specific width, 0 for the default width (attempted to
@@ -107,7 +120,7 @@ func MarkdownToText(markdown []byte, opt *Options) ([][]string, []byte) {
 // only be contained in the "Summary" metadata item and not part of the main
 // content. This is known as a "hard break".
 func MarkdownMetadata(markdown []byte) ([][]string, int) {
-	metadata := make([][]string, 0)
+	var metadata [][]string
 	pos := 0
 	for _, line := range bytes.Split(markdown, []byte("\n")) {
 		sline := strings.Trim(string(line), " ")
@@ -353,10 +366,10 @@ func (rend *renderer) Table(out *bytes.Buffer, header []byte, body []byte, colum
 	*opts = *rend.tableAlignOptions
 	opts.Widths = make([]int, len(columnData))
 	opts.Alignments = make([]brimtext.Alignment, len(columnData))
-	data := make([][]string, 0)
+	var data [][]string
 	rows := bytes.Split(header[:len(header)-1], []byte{markTableRow})
 	for _, row := range rows {
-		headerRow := make([]string, 0)
+		var headerRow []string
 		cells := bytes.Split(row[:len(row)-1], []byte{markTableCell})
 		for c, cell := range cells {
 			if columnData[c]&blackfriday.TABLE_ALIGNMENT_CENTER == blackfriday.TABLE_ALIGNMENT_CENTER {
@@ -382,7 +395,7 @@ func (rend *renderer) Table(out *bytes.Buffer, header []byte, body []byte, colum
 		if len(row) == 0 {
 			continue
 		}
-		bodyRow := make([]string, 0)
+		var bodyRow []string
 		cells := bytes.Split(row[:len(row)-1], []byte{markTableCell})
 		for c, cell := range cells {
 			cellString := string(cell)
