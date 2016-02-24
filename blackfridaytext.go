@@ -28,20 +28,28 @@ type Options struct {
 	// Indent2 is the prefix for any second or subsequent lines.
 	Indent2           string
 	TableAlignOptions *brimtext.AlignOptions
+	// HeaderPrefix is the prefix before any header line.
+	HeaderPrefix string
+	// HeaderSuffix is the suffix after any header line.
+	HeaderSuffix string
 }
 
-func parseOptions(opt *Options) (int, bool, []byte, []byte, *brimtext.AlignOptions) {
+func parseOptions(opt *Options) (int, bool, []byte, []byte, *brimtext.AlignOptions, []byte, []byte) {
 	var width int
 	var color bool
 	var indent1 []byte
 	var indent2 []byte
 	var tableAlignOptions *brimtext.AlignOptions
+	var headerPrefix []byte
+	var headerSuffix []byte
 	if opt != nil {
 		width = opt.Width
 		color = opt.Color
 		indent1 = []byte(opt.Indent1)
 		indent2 = []byte(opt.Indent2)
 		tableAlignOptions = opt.TableAlignOptions
+		headerPrefix = []byte(opt.HeaderPrefix)
+		headerSuffix = []byte(opt.HeaderSuffix)
 	}
 	if width < 1 {
 		width = brimtext.GetTTYWidth() + width
@@ -49,7 +57,7 @@ func parseOptions(opt *Options) (int, bool, []byte, []byte, *brimtext.AlignOptio
 	if tableAlignOptions == nil {
 		tableAlignOptions = brimtext.NewSimpleAlignOptions()
 	}
-	return width, color, indent1, indent2, tableAlignOptions
+	return width, color, indent1, indent2, tableAlignOptions, headerPrefix, headerSuffix
 }
 
 const (
@@ -136,11 +144,13 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 // detection and parsing of any leading metadata. If opt is nil the defaults
 // will be used.
 func MarkdownToTextNoMetadata(markdown []byte, opt *Options) []byte {
-	width, color, indent1, indent2, tableAlignOptions := parseOptions(opt)
+	width, color, indent1, indent2, tableAlignOptions, headerPrefix, headerSuffix := parseOptions(opt)
 	rend := &renderer{
 		width:             width,
 		color:             color,
 		tableAlignOptions: tableAlignOptions,
+		headerPrefix:      headerPrefix,
+		headerSuffix:      headerSuffix,
 	}
 	markdown = bytes.Replace(markdown, []byte("\n///\n"), []byte(""), -1)
 	txt := blackfriday.Markdown(markdown, rend,
@@ -170,6 +180,8 @@ type renderer struct {
 	tableAlignOptions *brimtext.AlignOptions
 	level             int
 	definitionList    [][]byte
+	headerPrefix      []byte
+	headerSuffix      []byte
 }
 
 func (rend *renderer) BlockCode(out *bytes.Buffer, text []byte, lang string) {
@@ -216,11 +228,16 @@ func (rend *renderer) Header(out *bytes.Buffer, text func() bool, level int, id 
 		out.WriteByte(markIndentStop)
 		rend.level--
 	}
-	out.WriteByte(markIndentStart)
-	out.WriteString("--[ ")
-	out.WriteByte(markIndent1)
-	out.WriteString("    ")
-	out.WriteByte(markIndent2)
+	if len(rend.headerPrefix) > 0 {
+		out.WriteByte(markIndentStart)
+		out.Write(rend.headerPrefix)
+		out.WriteByte(markNBSP)
+		out.WriteByte(markIndent1)
+		for i := 0; i <= len(rend.headerPrefix); i++ {
+			out.WriteByte(' ')
+		}
+		out.WriteByte(markIndent2)
+	}
 	if rend.color {
 		out.Write(brimtext.ANSIEscape.Bold)
 	}
@@ -232,9 +249,13 @@ func (rend *renderer) Header(out *bytes.Buffer, text func() bool, level int, id 
 	if rend.color {
 		out.Write(brimtext.ANSIEscape.Reset)
 	}
-	out.WriteByte(markNBSP)
-	out.WriteString("]--")
-	out.WriteByte(markIndentStop)
+	if len(rend.headerSuffix) > 0 {
+		out.WriteByte(markNBSP)
+		out.Write(rend.headerSuffix)
+	}
+	if len(rend.headerPrefix) > 0 {
+		out.WriteByte(markIndentStop)
+	}
 	for rend.level <= level {
 		out.WriteByte(markIndentStart)
 		out.WriteString("    ")

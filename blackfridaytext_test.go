@@ -244,7 +244,11 @@ for
 
 
 `
-	out := string(MarkdownToTextNoMetadata([]byte(in), &Options{Width: 40}))
+	out := string(MarkdownToTextNoMetadata([]byte(in), &Options{
+		Width:        40,
+		HeaderPrefix: "--[",
+		HeaderSuffix: "]--",
+	}))
 	exp := `This is a general test of features.
 
 --[ Heading One ]--
