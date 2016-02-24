@@ -148,7 +148,8 @@ func MarkdownToTextNoMetadata(markdown []byte, opt *Options) []byte {
 			blackfriday.EXTENSION_TABLES|
 			blackfriday.EXTENSION_FENCED_CODE|
 			blackfriday.EXTENSION_AUTOLINK|
-			blackfriday.EXTENSION_STRIKETHROUGH)
+			blackfriday.EXTENSION_STRIKETHROUGH|
+			blackfriday.EXTENSION_DEFINITION_LISTS)
 	for rend.level > 0 {
 		txt = append(txt, markIndentStop)
 		rend.level--
@@ -168,6 +169,7 @@ type renderer struct {
 	color             bool
 	tableAlignOptions *brimtext.AlignOptions
 	level             int
+	definitionList    [][]byte
 }
 
 func (rend *renderer) BlockCode(out *bytes.Buffer, text []byte, lang string) {
@@ -258,17 +260,51 @@ func (rend *renderer) List(out *bytes.Buffer, text func() bool, flags int) {
 		out.Truncate(oPos)
 		return
 	}
+	if len(rend.definitionList) > 0 {
+		dl := rend.definitionList
+		rend.definitionList = nil
+		max := 0
+		for i, v := range dl {
+			if i%2 == 0 && len(v) > max {
+				max = len(v)
+			}
+		}
+		if max > 0 {
+			max += 2
+		}
+		rend.ensureBlankLine(out)
+		for i := 0; i < len(dl)-1; i += 2 {
+			rend.ensureNewLine(out)
+			out.WriteByte(markIndentStart)
+			t := bytes.Trim(dl[i], string([]byte{markLineBreak}))
+			out.Write(t)
+			for i := len(t); i < max; i++ {
+				out.WriteByte(' ')
+			}
+			out.WriteByte(markIndent1)
+			for i := 0; i < max; i++ {
+				out.WriteByte(' ')
+			}
+			out.WriteByte(markIndent2)
+			out.Write(bytes.Trim(dl[i+1], string([]byte{markLineBreak})))
+			out.WriteByte(markIndentStop)
+		}
+	}
 }
 
 func (rend *renderer) ListItem(out *bytes.Buffer, text []byte, flags int) {
-	rend.ensureNewLine(out)
-	out.WriteByte(markIndentStart)
-	out.WriteString("  * ")
-	out.WriteByte(markIndent1)
-	out.WriteString("    ")
-	out.WriteByte(markIndent2)
-	out.Write(bytes.Trim(text, string([]byte{markLineBreak})))
-	out.WriteByte(markIndentStop)
+	if flags&blackfriday.LIST_TYPE_DEFINITION != 0 {
+		rend.definitionList = append(rend.definitionList, text)
+	} else {
+		rend.ensureNewLine(out)
+		out.WriteByte(markIndentStart)
+		out.WriteString("  * ")
+		out.WriteByte(markIndent1)
+		out.WriteString("    ")
+		out.WriteByte(markIndent2)
+		out.Write(bytes.Trim(text, string([]byte{markLineBreak})))
+		out.WriteByte(markIndentStop)
+	}
 }
 
 func (rend *renderer) Paragraph(out *bytes.Buffer, text func() bool) {

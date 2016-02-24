@@ -236,6 +236,12 @@ Test an ![image](image.png) and a [link](http://example.com).
 Force a line break  
 just above this.
 
+quick
+: definition list
+
+for
+: testing
+
 
 `
 	out := string(MarkdownToTextNoMetadata([]byte(in), &Options{Width: 40}))
@@ -302,9 +308,12 @@ just above this.
 
     Force a line break
     just above this.
+
+    quick  definition list
+    for    testing
 `
 	if out != exp {
-		t.Errorf("%#v != %#v", out, exp)
+		t.Errorf("%#v\n!=\n%#v", out, exp)
 	}
 }
 
