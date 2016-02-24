@@ -52,7 +52,10 @@ func parseOptions(opt *Options) (int, bool, []byte, []byte, *brimtext.AlignOptio
 		headerSuffix = []byte(opt.HeaderSuffix)
 	}
 	if width < 1 {
-		width = brimtext.GetTTYWidth() + width
+		width = brimtext.GetTTYWidth() - 1 + width
+	}
+	if width < 10 {
+		width = 10
 	}
 	if tableAlignOptions == nil {
 		tableAlignOptions = brimtext.NewSimpleAlignOptions()
