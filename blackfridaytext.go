@@ -35,10 +35,10 @@ type Options struct {
 }
 
 func resolveOpts(opts *Options) *Options {
-    ropts := &Options{}
+	ropts := &Options{}
 	if opts != nil {
-        *ropts = *opts
-    }
+		*ropts = *opts
+	}
 	if ropts.Width < 1 {
 		ropts.Width = brimtext.GetTTYWidth() - 1 + ropts.Width
 	}
@@ -46,18 +46,18 @@ func resolveOpts(opts *Options) *Options {
 		ropts.Width = 10
 	}
 	if ropts.TableAlignOptions == nil {
-        if ropts.Color {
-            ropts.TableAlignOptions = brimtext.NewUnicodeBoxedAlignOptions()
-        } else {
-            ropts.TableAlignOptions = brimtext.NewSimpleAlignOptions()
-        }
+		if ropts.Color {
+			ropts.TableAlignOptions = brimtext.NewUnicodeBoxedAlignOptions()
+		} else {
+			ropts.TableAlignOptions = brimtext.NewSimpleAlignOptions()
+		}
 	}
-    if ropts.HeaderPrefix == nil {
-        ropts.HeaderPrefix = []byte("--[")
-    }
-    if ropts.HeaderSuffix == nil {
-        ropts.HeaderSuffix = []byte("]--")
-    }
+	if ropts.HeaderPrefix == nil {
+		ropts.HeaderPrefix = []byte("--[")
+	}
+	if ropts.HeaderSuffix == nil {
+		ropts.HeaderSuffix = []byte("]--")
+	}
 	return ropts
 }
 
@@ -145,7 +145,7 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 // detection and parsing of any leading metadata. If opts is nil the defaults
 // will be used.
 func MarkdownToTextNoMetadata(markdown []byte, opts *Options) []byte {
-    opts = resolveOpts(opts)
+	opts = resolveOpts(opts)
 	rend := &renderer{
 		width:             opts.Width,
 		color:             opts.Color,
