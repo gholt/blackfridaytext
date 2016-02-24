@@ -205,6 +205,11 @@ Name  | Age
 Bob   | 27
 Alice | 23
 
+omit  | omit
+------|----
+Bob   | 27
+Alice | 23
+
 ` + "```" + `
 A block of code
    that will
@@ -268,6 +273,11 @@ just above this.
     | Bob   | 27  |
     | Alice | 23  |
     +-------+-----+
+
+    +-------+----+
+    | Bob   | 27 |
+    | Alice | 23 |
+    +-------+----+
 
     A block of code
        that will

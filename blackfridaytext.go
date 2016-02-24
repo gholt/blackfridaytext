@@ -289,9 +289,13 @@ func (rend *renderer) Table(out *bytes.Buffer, header []byte, body []byte, colum
 		for _, cell := range cells {
 			headerRow = append(headerRow, string(cell))
 		}
-		data = append(data, headerRow)
+		if len(headerRow) > 0 && headerRow[0] != "omit" {
+			data = append(data, headerRow)
+		}
 	}
-	data = append(data, nil)
+	if len(data) > 0 {
+		data = append(data, nil)
+	}
 	rows = bytes.Split(body[:len(body)-1], []byte{markTableRow})
 	for _, row := range rows {
 		if len(row) == 0 {
