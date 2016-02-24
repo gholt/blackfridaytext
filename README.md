@@ -1,6 +1,10 @@
 # Blackfriday Text
 ## A text renderer for the [Blackfriday Markdown Processor](http://github.com/russross/blackfriday).
 
+This can be useful for quick displays of Markdown files, of course, but one use
+I've found for it is nicer CLI output. For an example, see the output of the
+`ring` command from http://github.com/gholt/ring
+
 [API Documentation](http://godoc.org/github.com/gholt/blackfridaytext)
 
 > Copyright Gregory Holt. All rights reserved.  
