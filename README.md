@@ -24,7 +24,11 @@ import (
 )
 
 func main() {
-    opt := &blackfridaytext.Options{Color: true}
+    opt := &blackfridaytext.Options{
+        Color: true,
+        HeaderPrefix: "--[",
+        HeaderSuffix: "]--",
+    }
     if len(os.Args) == 2 && os.Args[1] == "--no-color" {
         opt.Color = false
     }
