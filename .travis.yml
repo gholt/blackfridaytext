@@ -1,2 +1,11 @@
 language: go
-script: go install ./...
+script:
+  - go test -v --timeout=1m -cpu=1,3,7 ./...
+  - go install ./...
+deploy:
+  provider: releases
+  api_key: "GITHUB OAUTH TOKEN"
+  file: "$GOPATH/bin/blackfridaytext-tool"
+  skip_cleanup: true
+  on:
+    tags: true
