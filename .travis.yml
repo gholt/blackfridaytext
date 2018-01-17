@@ -7,5 +7,6 @@ deploy:
   api_key: "GITHUB OAUTH TOKEN"
   file: "$GOPATH/bin/blackfridaytext-tool"
   skip_cleanup: true
+  overwrite: true
   on:
     tags: true
