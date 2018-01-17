@@ -4,9 +4,11 @@ script:
   - go install ./...
 deploy:
   provider: releases
-  api_key: "GITHUB OAUTH TOKEN"
+  api_key:
+    secure: t/SiyvI9ZcT1jPF69EubXFnox0DbMU3q+WfWAEQjocAZHKpSNBJkXHxMGNqipt8vjz0ucHjfFhKMdjxbXKC5HUuS2l2g0eO7DlXJYOp2f+1FHzf2ISxSt78IsuMxEhqj96fxMZqZhTCbs6Pab0AEDsxmyU5AardhtdaO/BuovPGNFGG4zFT3EXAJP5tL/djjCwcwd2V63OwULRvmesWVzPsdOyECW30ibyhD5jNhkjllbiTcDsi6qjdjAMx+VxO9myPoYvh24hGdC3fHccSuJyFYwPKubRSVAIrNFnrNTi8DhcB8V1Jn42FB1q0fSKZSJYCVLqHjb0Z28xDnctAPZgWmT/p6d3s1jVEsyW45++aECJOYt1HpHxg3ooU0+/PKVjWsBL6WDfkd6n6aLPrEti1dQ5IdphreKImorj2ua/U/W15u9dEhYs2rOK7bfuNk6oa8mZbE2r5mYOCoxPpQ7d9pIiyq81pLovpv3kkf/aYy/6niA+2qlYt4HdTwrKPaisx/xFIbmdFI4HDE/6HzK5oW478NPgxVW/qzhlsopFhtIq2QP/l/aCxFYfMEpL4aVm1vWdmuqulz7Dntmqke3GLtKZgT21pgMNk96evoOwG79ZMY9kQyIXR5x4GBVoMGAo4tpyOWuTD7OEeZCMFqIqIGPu2eRNnlPCjL1evQSm8=
   file: "$GOPATH/bin/blackfridaytext-tool"
   skip_cleanup: true
   overwrite: true
   on:
     tags: true
+    repo: gholt/blackfridaytext
