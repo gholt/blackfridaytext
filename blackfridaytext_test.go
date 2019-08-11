@@ -426,3 +426,87 @@ A bunch | of | other stuff to make it have to wrap at some point for this test.
 		t.Errorf("%#v != %#v", out, exp)
 	}
 }
+
+func TestTableWithLinks(t *testing.T) {
+	in := `Table With Links Test
+
+One | Two | Three
+--- | --- | ---
+1 | 2 | 3
+A bunch | of | other stuff to make it have to wrap at some point for this test.
+https://link | Two | Three
+`
+	out := string(MarkdownToTextNoMetadata([]byte(in), &Options{
+		Width: 40,
+	}))
+	//   1         2         3         4
+	// 890123456789012345678901234567890
+	exp := `Table With Links Test
+
++--------------+-----+-----------------+
+| One          | Two | Three           |
++--------------+-----+-----------------+
+| 1            | 2   | 3               |
+| A            | of  | other stuff to  |
+| bunch        |     | make it have to |
+|              |     | wrap at some    |
+|              |     | point for this  |
+|              |     | test.           |
+| https://link | Two | Three           |
++--------------+-----+-----------------+
+`
+	if out != exp {
+		t.Errorf("%#v != %#v", out, exp)
+	}
+	out = string(MarkdownToTextNoMetadata([]byte(in), &Options{
+		Width:             40,
+		TableAlignOptions: brimtext.NewUnicodeBoxedAlignOptions(),
+	}))
+	//   1         2         3         4
+	// 890123456789012345678901234567890
+	exp = `Table With Links Test
+
+╔══════════════╦═════╤═════════════════╗
+║ One          ║ Two │ Three           ║
+╠══════════════╬═════╪═════════════════╣
+║ 1            ║ 2   │ 3               ║
+╟──────────────╫─────┼─────────────────╢
+║ A            ║ of  │ other stuff to  ║
+║ bunch        ║     │ make it have to ║
+║              ║     │ wrap at some    ║
+║              ║     │ point for this  ║
+║              ║     │ test.           ║
+╟──────────────╫─────┼─────────────────╢
+║ https://link ║ Two │ Three           ║
+╚══════════════╩═════╧═════════════════╝
+`
+	if out != exp {
+		t.Errorf("%#v != %#v", out, exp)
+	}
+	out = string(MarkdownToTextNoMetadata([]byte(in), &Options{
+		Color:             true,
+		Width:             40,
+		TableAlignOptions: brimtext.NewUnicodeBoxedAlignOptions(),
+	}))
+	//   1         2         3         4
+	// 890123456789012345678901234567890
+	exp = `Table With Links Test
+
+╔══════════════╦═════╤═════════════════╗
+║ One          ║ Two │ Three           ║
+╠══════════════╬═════╪═════════════════╣
+║ 1            ║ 2   │ 3               ║
+╟──────────────╫─────┼─────────────────╢
+║ A            ║ of  │ other stuff to  ║
+║ bunch        ║     │ make it have to ║
+║              ║     │ wrap at some    ║
+║              ║     │ point for this  ║
+║              ║     │ test.           ║
+╟──────────────╫─────┼─────────────────╢
+║ ` + "\x1b" + `[34mhttps://link` + "\x1b" + `[0m ║ Two │ Three           ║
+╚══════════════╩═════╧═════════════════╝
+`
+	if out != exp {
+		t.Errorf("%#v != %#v", out, exp)
+	}
+}

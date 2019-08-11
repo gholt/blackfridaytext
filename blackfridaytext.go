@@ -378,8 +378,8 @@ func (rend *renderer) Table(out *bytes.Buffer, header []byte, body []byte, colum
 				opts.Alignments[c] = brimtext.Right
 			}
 			cellString := string(cell)
-			if len([]rune(cellString)) > opts.Widths[c] {
-				opts.Widths[c] = len([]rune(cellString))
+			if ln := brimtext.RuneLenStripANSIEscapes(cellString); ln > opts.Widths[c] {
+				opts.Widths[c] = ln
 			}
 			headerRow = append(headerRow, cellString)
 		}
@@ -399,19 +399,19 @@ func (rend *renderer) Table(out *bytes.Buffer, header []byte, body []byte, colum
 		cells := bytes.Split(row[:len(row)-1], []byte{markTableCell})
 		for c, cell := range cells {
 			cellString := string(cell)
-			if len([]rune(cellString)) > opts.Widths[c] {
-				opts.Widths[c] = len([]rune(cellString))
+			if ln := brimtext.RuneLenStripANSIEscapes(cellString); ln > opts.Widths[c] {
+				opts.Widths[c] = ln
 			}
 			bodyRow = append(bodyRow, cellString)
 		}
 		data = append(data, bodyRow)
 	}
-	overheadw := rend.currentIndent + len([]rune(opts.RowFirstUD)) + len([]rune(opts.RowLastUD))
+	overheadw := rend.currentIndent + brimtext.RuneLenStripANSIEscapes(opts.RowFirstUD) + brimtext.RuneLenStripANSIEscapes(opts.RowLastUD)
 	if len(columnData) > 1 {
-		overheadw += len([]rune(opts.RowSecondUD))
+		overheadw += brimtext.RuneLenStripANSIEscapes(opts.RowSecondUD)
 	}
 	if len(columnData) > 2 {
-		overheadw += len([]rune(opts.RowUD)) * (len(columnData) - 2)
+		overheadw += brimtext.RuneLenStripANSIEscapes(opts.RowUD) * (len(columnData) - 2)
 	}
 	aw := rend.width - overheadw
 	cw := 0
@@ -439,7 +439,7 @@ func (rend *renderer) Table(out *bytes.Buffer, header []byte, body []byte, colum
 		good := true
 		text = brimtext.Align(data, opts)
 		for _, line := range strings.Split(text, "\n") {
-			if len([]rune(line))-overheadw > aw {
+			if brimtext.RuneLenStripANSIEscapes(line)-overheadw > aw {
 				good = false
 			}
 		}

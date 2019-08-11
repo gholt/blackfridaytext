@@ -1,5 +1,7 @@
 github.com/gholt/brimtext v0.0.0-20170720063718-d5c8037dd915 h1:90pxhJ+249WBZOgBTEe+mgSZZPfBWDkn83Eh3485PSQ=
 github.com/gholt/brimtext v0.0.0-20170720063718-d5c8037dd915/go.mod h1:5tBeED/IDL72+gB3aYWQtVpb4PJ2uDYmqMAGHH/tfFA=
+github.com/gholt/brimtext v0.0.0-20190811231012-1fbdf4665642 h1:OfEy3A+F4fmU2ZgBd6fBJ03gR6Kw5euUbs5tpGXD/6U=
+github.com/gholt/brimtext v0.0.0-20190811231012-1fbdf4665642/go.mod h1:gbGD4x/o6OSgyScStZ9iJT+Eo1bTY93+3ydlYKjpotM=
 github.com/russross/blackfriday v0.0.0-20171011182219-6d1ef893fcb0 h1:hgS5QyP981zzGr3UYaoHb5+fpgK1lHleAOq5znvfJxU=
 github.com/russross/blackfriday v0.0.0-20171011182219-6d1ef893fcb0/go.mod h1:JO/DiYxRf+HjHt06OyowR9PTA263kcR/rfWxYHBV53g=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
