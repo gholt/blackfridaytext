@@ -4,7 +4,11 @@
 
 package blackfridaytext
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/gholt/brimtext"
+)
 
 func TestBasic(t *testing.T) {
 	in := "Basic Test"
@@ -371,4 +375,54 @@ func metadataEqualForTesting(m1 [][]string, m2 [][]string) bool {
 		}
 	}
 	return true
+}
+
+func TestUnicodeTable(t *testing.T) {
+	in := `Unicode Table Test
+
+One | Two | Three
+--- | --- | ---
+1 | 2 | 3
+A bunch | of | other stuff to make it have to wrap at some point for this test.
+`
+	out := string(MarkdownToTextNoMetadata([]byte(in), &Options{
+		Width: 40,
+	}))
+	//   1         2         3         4
+	// 890123456789012345678901234567890
+	exp := `Unicode Table Test
+
++-------+-----+------------------------+
+| One   | Two | Three                  |
++-------+-----+------------------------+
+| 1     | 2   | 3                      |
+| A     | of  | other stuff to make it |
+| bunch |     | have to wrap at some   |
+|       |     | point for this test.   |
++-------+-----+------------------------+
+`
+	if out != exp {
+		t.Errorf("%#v != %#v", out, exp)
+	}
+	out = string(MarkdownToTextNoMetadata([]byte(in), &Options{
+		Width:             40,
+		TableAlignOptions: brimtext.NewUnicodeBoxedAlignOptions(),
+	}))
+	//   1         2         3         4
+	// 890123456789012345678901234567890
+	exp = `Unicode Table Test
+
+╔═══════╦═════╤════════════════════════╗
+║ One   ║ Two │ Three                  ║
+╠═══════╬═════╪════════════════════════╣
+║ 1     ║ 2   │ 3                      ║
+╟───────╫─────┼────────────────────────╢
+║ A     ║ of  │ other stuff to make it ║
+║ bunch ║     │ have to wrap at some   ║
+║       ║     │ point for this test.   ║
+╚═══════╩═════╧════════════════════════╝
+`
+	if out != exp {
+		t.Errorf("%#v != %#v", out, exp)
+	}
 }
