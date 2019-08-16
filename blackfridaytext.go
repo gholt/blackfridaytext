@@ -36,6 +36,21 @@ type Options struct {
 	Width int
 	// Color set true will allow ANSI Color Escape Codes.
 	Color bool
+	// The following are the byte values for each color output for the
+	// differing elements. Each will be followed by ColorReset. Usually these
+	// are set to whatever ANSI escape sequences you want. Left nil, they will
+	// be set to reasonable defaults. See brimtext.ANSIEscape for some quick
+	// examples to use.
+	ColorHeader         []byte
+	ColorLink           []byte
+	ColorImage          []byte
+	ColorCodeSpan       []byte
+	ColorBlockCode      []byte
+	ColorStrikethrough  []byte
+	ColorEmphasis       []byte
+	ColorDoubleEmphasis []byte
+	ColorTripleEmphasis []byte
+	ColorReset          []byte
 	// Indent1 is the prefix for the first line.
 	Indent1 []byte
 	// Indent2 is the prefix for any second or subsequent lines.
@@ -57,6 +72,38 @@ func resolveOpts(opts *Options) *Options {
 	}
 	if ropts.Width < 10 {
 		ropts.Width = 10
+	}
+	if ropts.ColorHeader == nil {
+		ropts.ColorHeader = brimtext.ANSIEscape.Bold
+	}
+	if ropts.ColorLink == nil {
+		ropts.ColorLink = brimtext.ANSIEscape.FBlue
+	}
+	if ropts.ColorImage == nil {
+		ropts.ColorImage = brimtext.ANSIEscape.FMagenta
+	}
+	if ropts.ColorCodeSpan == nil {
+		ropts.ColorCodeSpan = brimtext.ANSIEscape.FGreen
+	}
+	if ropts.ColorBlockCode == nil {
+		ropts.ColorBlockCode = brimtext.ANSIEscape.FGreen
+	}
+	if ropts.ColorStrikethrough == nil {
+		ropts.ColorStrikethrough = brimtext.ANSIEscape.FWhite
+	}
+	if ropts.ColorEmphasis == nil {
+		ropts.ColorEmphasis = brimtext.ANSIEscape.FYellow
+	}
+	if ropts.ColorDoubleEmphasis == nil {
+		ropts.ColorDoubleEmphasis = brimtext.ANSIEscape.Bold
+	}
+	if ropts.ColorTripleEmphasis == nil {
+		var c []byte
+		c = append(c, brimtext.ANSIEscape.Bold...)
+		ropts.ColorTripleEmphasis = append(c, brimtext.ANSIEscape.FRed...)
+	}
+	if ropts.ColorReset == nil {
+		ropts.ColorReset = brimtext.ANSIEscape.Reset
 	}
 	if ropts.TableAlignOptions == nil {
 		if ropts.Color {
@@ -160,11 +207,21 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 func MarkdownToTextNoMetadata(markdown []byte, opts *Options) []byte {
 	opts = resolveOpts(opts)
 	rend := &renderer{
-		width:             opts.Width,
-		color:             opts.Color,
-		tableAlignOptions: opts.TableAlignOptions,
-		headerPrefix:      opts.HeaderPrefix,
-		headerSuffix:      opts.HeaderSuffix,
+		width:               opts.Width,
+		color:               opts.Color,
+		colorHeader:         opts.ColorHeader,
+		colorLink:           opts.ColorLink,
+		colorImage:          opts.ColorImage,
+		colorCodeSpan:       opts.ColorCodeSpan,
+		colorBlockCode:      opts.ColorBlockCode,
+		colorStrikethrough:  opts.ColorStrikethrough,
+		colorEmphasis:       opts.ColorEmphasis,
+		colorDoubleEmphasis: opts.ColorDoubleEmphasis,
+		colorTripleEmphasis: opts.ColorTripleEmphasis,
+		colorReset:          opts.ColorReset,
+		tableAlignOptions:   opts.TableAlignOptions,
+		headerPrefix:        opts.HeaderPrefix,
+		headerSuffix:        opts.HeaderSuffix,
 	}
 	markdown = bytes.Replace(markdown, []byte("\n///\n"), []byte(""), -1)
 	txt := blackfriday.Markdown(markdown, rend,
@@ -189,14 +246,24 @@ func MarkdownToTextNoMetadata(markdown []byte, opts *Options) []byte {
 }
 
 type renderer struct {
-	width             int
-	currentIndent     int
-	color             bool
-	tableAlignOptions *brimtext.AlignOptions
-	level             int
-	definitionList    [][]byte
-	headerPrefix      []byte
-	headerSuffix      []byte
+	width               int
+	currentIndent       int
+	color               bool
+	colorHeader         []byte
+	colorLink           []byte
+	colorImage          []byte
+	colorCodeSpan       []byte
+	colorBlockCode      []byte
+	colorStrikethrough  []byte
+	colorEmphasis       []byte
+	colorDoubleEmphasis []byte
+	colorTripleEmphasis []byte
+	colorReset          []byte
+	tableAlignOptions   *brimtext.AlignOptions
+	level               int
+	definitionList      [][]byte
+	headerPrefix        []byte
+	headerSuffix        []byte
 }
 
 func (rend *renderer) BlockCode(out *bytes.Buffer, text []byte, lang string) {
@@ -207,11 +274,11 @@ func (rend *renderer) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	rend.ensureBlankLine(out)
 	for _, line := range bytes.Split(text, []byte("\n")) {
 		if rend.color {
-			out.Write(brimtext.ANSIEscape.FGreen)
+			out.Write(rend.colorBlockCode)
 		}
 		out.Write(bytes.Replace(line, []byte(" "), []byte{markNBSP}, -1))
 		if rend.color {
-			out.Write(brimtext.ANSIEscape.Reset)
+			out.Write(rend.colorReset)
 		}
 		out.WriteByte(markLineBreak)
 	}
@@ -258,7 +325,7 @@ func (rend *renderer) Header(out *bytes.Buffer, text func() bool, level int, id 
 		rend.currentIndent += len(rend.headerPrefix) + 1
 	}
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Bold)
+		out.Write(rend.colorHeader)
 	}
 	if !text() {
 		out.Truncate(oPos)
@@ -266,7 +333,7 @@ func (rend *renderer) Header(out *bytes.Buffer, text func() bool, level int, id 
 		return
 	}
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Reset)
+		out.Write(rend.colorReset)
 	}
 	if len(rend.headerSuffix) > 0 {
 		out.WriteByte(markNBSP)
@@ -506,23 +573,23 @@ func (rend *renderer) TitleBlock(out *bytes.Buffer, text []byte) {
 
 func (rend *renderer) AutoLink(out *bytes.Buffer, link []byte, kind int) {
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.FBlue)
+		out.Write(rend.colorLink)
 	}
 	out.Write(link)
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Reset)
+		out.Write(rend.colorReset)
 	}
 }
 
 func (rend *renderer) CodeSpan(out *bytes.Buffer, text []byte) {
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.FGreen)
+		out.Write(rend.colorCodeSpan)
 	} else {
 		out.WriteByte('"')
 	}
 	out.Write(bytes.Replace(text, []byte(" "), []byte{markNBSP}, -1))
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Reset)
+		out.Write(rend.colorReset)
 	} else {
 		out.WriteByte('"')
 	}
@@ -530,13 +597,13 @@ func (rend *renderer) CodeSpan(out *bytes.Buffer, text []byte) {
 
 func (rend *renderer) DoubleEmphasis(out *bytes.Buffer, text []byte) {
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Bold)
+		out.Write(rend.colorDoubleEmphasis)
 	} else {
 		out.WriteString("**")
 	}
 	out.Write(text)
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Reset)
+		out.Write(rend.colorReset)
 	} else {
 		out.WriteString("**")
 	}
@@ -544,13 +611,13 @@ func (rend *renderer) DoubleEmphasis(out *bytes.Buffer, text []byte) {
 
 func (rend *renderer) Emphasis(out *bytes.Buffer, text []byte) {
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.FYellow)
+		out.Write(rend.colorEmphasis)
 	} else {
 		out.WriteByte('*')
 	}
 	out.Write(text)
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Reset)
+		out.Write(rend.colorReset)
 	} else {
 		out.WriteByte('*')
 	}
@@ -558,7 +625,7 @@ func (rend *renderer) Emphasis(out *bytes.Buffer, text []byte) {
 
 func (rend *renderer) Image(out *bytes.Buffer, link []byte, title []byte, alt []byte) {
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.FMagenta)
+		out.Write(rend.colorImage)
 	}
 	if len(alt) > 0 {
 		out.WriteByte('[')
@@ -573,7 +640,7 @@ func (rend *renderer) Image(out *bytes.Buffer, link []byte, title []byte, alt []
 	}
 	out.Write(link)
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Reset)
+		out.Write(rend.colorReset)
 	}
 }
 
@@ -583,7 +650,7 @@ func (rend *renderer) LineBreak(out *bytes.Buffer) {
 
 func (rend *renderer) Link(out *bytes.Buffer, link []byte, title []byte, content []byte) {
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.FBlue)
+		out.Write(rend.colorLink)
 	}
 	if len(content) > 0 && !bytes.Equal(content, link) {
 		out.WriteByte('[')
@@ -598,7 +665,7 @@ func (rend *renderer) Link(out *bytes.Buffer, link []byte, title []byte, content
 	}
 	out.Write(link)
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Reset)
+		out.Write(rend.colorReset)
 	}
 }
 
@@ -608,14 +675,13 @@ func (rend *renderer) RawHtmlTag(out *bytes.Buffer, tag []byte) {
 
 func (rend *renderer) TripleEmphasis(out *bytes.Buffer, text []byte) {
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Bold)
-		out.Write(brimtext.ANSIEscape.FRed)
+		out.Write(rend.colorTripleEmphasis)
 	} else {
 		out.WriteString("***")
 	}
 	out.Write(text)
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Reset)
+		out.Write(rend.colorReset)
 	} else {
 		out.WriteString("***")
 	}
@@ -623,13 +689,13 @@ func (rend *renderer) TripleEmphasis(out *bytes.Buffer, text []byte) {
 
 func (rend *renderer) StrikeThrough(out *bytes.Buffer, text []byte) {
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.FWhite)
+		out.Write(rend.colorStrikethrough)
 	} else {
 		out.WriteString("~~")
 	}
 	out.Write(text)
 	if rend.color {
-		out.Write(brimtext.ANSIEscape.Reset)
+		out.Write(rend.colorReset)
 	} else {
 		out.WriteString("~~")
 	}
