@@ -174,7 +174,7 @@ func MarkdownMetadata(markdown []byte) ([][]string, int) {
 		if sline == "" {
 			break
 		}
-		colon := strings.Index(sline, ": ")
+		colon := strings.Index(sline, ":")
 		if colon == -1 {
 			// Since there's no blank line separating the metadata and content,
 			// we assume there wasn't actually any metadata.

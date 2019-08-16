@@ -20,15 +20,32 @@ func TestBasic(t *testing.T) {
 }
 
 func TestMetadata(t *testing.T) {
-	in := `One: Two  
-Three: Four  
+	in := `One:Two  
+Three: 
+Four:
 `
 	out, pos := MarkdownMetadata([]byte(in))
 	exp := [][]string{
 		[]string{"One", "Two"},
+		[]string{"Three", ""},
+		[]string{"Four", ""},
+	}
+	expPos := 24
+	if !metadataEqualForTesting(out, exp) {
+		t.Errorf("%#v != %#v", out, exp)
+	}
+	if pos != expPos {
+		t.Errorf("%#v != %#v", pos, expPos)
+	}
+	in = `One: Two  
+Three: Four  
+`
+	out, pos = MarkdownMetadata([]byte(in))
+	exp = [][]string{
+		[]string{"One", "Two"},
 		[]string{"Three", "Four"},
 	}
-	expPos := 25
+	expPos = 25
 	if !metadataEqualForTesting(out, exp) {
 		t.Errorf("%#v != %#v", out, exp)
 	}
